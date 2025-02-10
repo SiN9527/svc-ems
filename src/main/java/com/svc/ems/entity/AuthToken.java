@@ -1,9 +1,6 @@
 package com.svc.ems.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -37,8 +34,19 @@ public class AuthToken {
     @Column(name = "expired_at", nullable = false)
     private Timestamp expiredAt;
 
-    @ColumnDefault("CURRENT_TIMESTAMP")
+    @NotNull
     @Column(name = "created_at")
     private Timestamp createdAt;
+
+
+    /**
+     * 設定 `created_at` 和 `updated_at` 預設值
+     */
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = new Timestamp(System.currentTimeMillis());
+
+    }
+
 
 }

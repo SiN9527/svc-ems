@@ -13,7 +13,7 @@ import java.util.Objects;
 @Embeddable
 public class UserMainRolePk implements Serializable {
 
-    private static final long serialVersionUID = -1091896858500134015L;
+    private static final long serialVersionUID = 1L;
 
     @Size(max = 50)
     @NotNull
