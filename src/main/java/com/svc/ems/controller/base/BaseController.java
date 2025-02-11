@@ -22,9 +22,9 @@ public class BaseController {
     }
 
     @PostMapping("/getToken")
-    public ResponseEntity<?> login(@RequestBody SwaggerUserLoginRequest req) {
+    public String login(@RequestBody SwaggerUserLoginRequest req) {
 
-        // 返回 JWT 和其他信息
+        // 返回 Bearer Token
         return baseService.getToken(req);
     }
 

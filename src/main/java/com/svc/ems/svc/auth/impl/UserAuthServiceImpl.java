@@ -97,3 +97,13 @@ public class UserAuthServiceImpl implements UserAuthService {
         return ResponseEntity.ok("User registered successfully.");
     }
 }
+
+// // **使用 Spring Security 的 `authenticate()` 驗證身份**  不手動loadUser
+//    Authentication authentication = authenticationManager.authenticate(
+//            new UsernamePasswordAuthenticationToken(email, password)
+//    );
+//
+//    log.info("驗證通過: {}", authentication.getName());
+//
+//    // **取得 UserDetails**
+//    UserDetails userDetails = (UserDetails) authentication.getPrincipal();

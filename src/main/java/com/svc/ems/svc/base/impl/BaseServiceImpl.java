@@ -4,19 +4,14 @@ import com.svc.ems.config.jwt.JwtMemberDetailsService;
 import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
 import com.svc.ems.dto.auth.SwaggerUserLoginRequest;
-import com.svc.ems.dto.auth.UserLoginRequest;
-import com.svc.ems.dto.auth.UserLoginResponse;
-import com.svc.ems.dto.auth.UserRegisterRequest;
-import com.svc.ems.entity.UserMain;
 import com.svc.ems.repo.UserMainRepository;
-import com.svc.ems.svc.auth.UserAuthService;
 import com.svc.ems.svc.base.BaseService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -42,22 +37,18 @@ public class BaseServiceImpl implements BaseService {
     }
 
 
-
-
-
     @Override
-    public ResponseEntity<?> getToken(SwaggerUserLoginRequest req) {
+    public String getToken(SwaggerUserLoginRequest req) {
+
         String email = req.getEmail();
         String password = req.getPassword();
 
-        System.out.println("email: " + email);
-        log.info("email: {}", email);
         // 確定身份類型（USER 或 MEMBER）
         boolean isUser = userDetailsService.userExists(email);
         boolean isMember = memberDetailsService.memberExists(email);
 
         if (!isUser && !isMember) {
-            return ResponseEntity.badRequest().body("Invalid email or password.");
+            return "Invalid email or password.";
         }
 
         UserDetails userDetails;
@@ -73,21 +64,13 @@ public class BaseServiceImpl implements BaseService {
 
         // 驗證密碼
         if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-            return ResponseEntity.badRequest().body("Invalid email or password.");
+            return "Invalid email or password.";
         }
 
         // 生成 JWT
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(auth -> auth.getAuthority().replace("ROLE_", ""))
-                .toList();
-        log.info("roles: {}", roles);
-        log.info("type: {}", type);
-        log.info("email: {}", email);
+        List<String> roles = new ArrayList<>();
 
-        String token = jwtUtil.generateToken(email, type, roles);
-        log.info("email: {}", token);
-        log.info("email: {}", new UserLoginResponse(token, roles));
-        // 返回 JWT 和其他信息
-        return ResponseEntity.ok(new UserLoginResponse(token, roles));
+        return jwtUtil.generateToken(email, type, roles);
+
     }
 }

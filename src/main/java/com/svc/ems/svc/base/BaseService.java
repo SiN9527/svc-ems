@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface BaseService {
 
-    public ResponseEntity<?> getToken(SwaggerUserLoginRequest req);
+    public String getToken(SwaggerUserLoginRequest req);
 
 
 }
