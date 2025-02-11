@@ -49,4 +49,8 @@ public class JwtUserDetailsService implements UserDetailsService {
         // 返回 Spring Security 的 UserDetails
         return new JwtUserDetails(user, authorities);
     }
+
+   public boolean userExists(String email) {
+        return userMainRepository.existsByEmail(email);
+    }
 }

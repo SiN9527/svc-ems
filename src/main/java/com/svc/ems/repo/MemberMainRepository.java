@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface MemberMainRepository extends JpaRepository<MemberMain, String> {
 
     Optional<MemberMain> findByEmail(String email); // 根據 email 查找會員
+
+    Boolean existsByEmail(String email);
 }
