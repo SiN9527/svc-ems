@@ -16,6 +16,7 @@ import java.time.Instant;
 @Table(name = "USER_MAIN", schema = "db_001")
 public class UserMain {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // 設定自動生成 ID
     @Column(name = "user_id", nullable = false)
     private Long userId;
 

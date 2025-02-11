@@ -1,7 +1,6 @@
 package com.svc.ems.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginResponse {
+public class UserLoginResponse {
 
     @JsonProperty("Token")
     private String token; // JWT Token
@@ -28,6 +27,8 @@ public class LoginResponse {
     @JsonProperty("MemberId")
     private String memberId; // 會員 ID (可選)
 
-    public LoginResponse(String token, List<String> roles) {
+    public UserLoginResponse(String token, List<String> roles) {
+        this.token = token;
+        this.roles = roles;
     }
 }

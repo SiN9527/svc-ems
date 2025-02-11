@@ -1,4 +1,4 @@
-package com.svc.ems.config.swagger;
+package com.svc.ems.config;
 
 
 import com.svc.ems.exception.AdminDuplicatedException;

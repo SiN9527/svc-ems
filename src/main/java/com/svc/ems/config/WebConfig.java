@@ -1,4 +1,4 @@
-package com.svc.ems.config.swagger;
+package com.svc.ems.config;
 
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;

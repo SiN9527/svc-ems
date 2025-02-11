@@ -52,6 +52,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 放行 /api/auth/** 路徑，不需要 JWT 認證
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         // 放行 Swagger 相關路徑
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         // 其他所有請求皆需要驗證
