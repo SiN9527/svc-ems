@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# 忽略 logs 目錄下所有檔案
+logs/
+
+# 或者僅忽略特定副檔名的日誌檔案
+*.log
+
