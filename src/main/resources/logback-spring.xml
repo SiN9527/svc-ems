@@ -15,7 +15,7 @@
     <!-- RollingFileAppender：輸出到文件並支援日誌輪轉 -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- 日誌文件名稱 -->
-        <file>${LOG_PATH}/emsApp.log</file>
+        <file>${LOG_PATH}/svc-ems-logger.log</file>
         <!-- 定義輪轉策略 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- 每日產生一個新日誌文件，並根據日期命名 -->
