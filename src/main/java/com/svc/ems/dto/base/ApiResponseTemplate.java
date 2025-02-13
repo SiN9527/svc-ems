@@ -25,7 +25,7 @@ import lombok.Data;
  * @param <E> 泛型數據類型
  */
 @Data
-public class ApiResponse<E> implements Serializable {
+public class ApiResponseTemplate<E> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -72,50 +72,50 @@ public class ApiResponse<E> implements Serializable {
     /**
      * 私有建構子，避免直接 new
      */
-    private ApiResponse() {
+    private ApiResponseTemplate() {
         this.timestamp = Instant.now().toEpochMilli(); // 設定請求的時間戳
     }
 
-    // ✅ **成功回應**
-    public static <E> ApiResponse<E> success(E payload) {
-        ApiResponse<E> response = new ApiResponse<>();
+    //  **成功回應**
+    public static <E> ApiResponseTemplate<E> success(E payload) {
+        ApiResponseTemplate<E> response = new ApiResponseTemplate<>();
         response.httpStatusCode = 200;
         response.messageDetail = "Success";
         response.payload = payload;
         return response;
     }
 
-    public static <E> ApiResponse<E> success(String message, E payload) {
-        ApiResponse<E> response = new ApiResponse<>();
+    public static <E> ApiResponseTemplate<E> success(String message, E payload) {
+        ApiResponseTemplate<E> response = new ApiResponseTemplate<>();
         response.httpStatusCode = 200;
         response.messageDetail = message;
         response.payload = payload;
         return response;
     }
 
-    // ✅ **失敗回應**
-    public static <E> ApiResponse<E> fail(int httpStatusCode, String error, String messageDetail) {
-        ApiResponse<E> response = new ApiResponse<>();
+    //  **失敗回應**
+    public static <E> ApiResponseTemplate<E> fail(int httpStatusCode, String error, String messageDetail) {
+        ApiResponseTemplate<E> response = new ApiResponseTemplate<>();
         response.httpStatusCode = httpStatusCode;
         response.error = error;
         response.messageDetail = messageDetail;
         return response;
     }
 
-    public static <E> ApiResponse<E> fail(int httpStatusCode, String messageDetail) {
+    public static <E> ApiResponseTemplate<E> fail(int httpStatusCode, String messageDetail) {
         return fail(httpStatusCode, null, messageDetail);
     }
 
-    // ✅ **支援 Builder 模式**
+    //  **支援 Builder 模式**
     public static <E> Builder<E> builder() {
         return new Builder<>();
     }
 
     public static class Builder<E> {
-        private final ApiResponse<E> response;
+        private final ApiResponseTemplate<E> response;
 
         public Builder() {
-            this.response = new ApiResponse<>();
+            this.response = new ApiResponseTemplate<>();
         }
 
         public Builder<E> httpStatusCode(int httpStatusCode) {
@@ -153,7 +153,7 @@ public class ApiResponse<E> implements Serializable {
             return this;
         }
 
-        public ApiResponse<E> build() {
+        public ApiResponseTemplate<E> build() {
             return response;
         }
     }
