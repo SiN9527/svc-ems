@@ -1,7 +1,7 @@
 package com.svc.ems.config;
 
 
-import com.svc.ems.dto.base.ApiResponse;
+import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.exception.AdminDuplicatedException;
 import com.svc.ems.exception.AdminNotFoundException;
 import com.svc.ems.exception.ServiceException;
@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
      * @return `ApiResponse<Void>` 統一格式的錯誤回應
      */
     @ExceptionHandler(ServiceException.class)
-    public ApiResponse<Void> handleServiceException(ServiceException e) {
+    public ApiResponseTemplate<Void> handleServiceException(ServiceException e) {
         log.error("ServiceException: {}", e.getMessage(), e); // **記錄異常日誌**
 
         if (e instanceof AdminDuplicatedException) {
@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
      * @return `ApiResponse<Void>` 統一格式的錯誤回應
      */
     @ExceptionHandler(Exception.class)
-    public ApiResponse<Void> handleGlobalException(Exception e) {
+    public ApiResponseTemplate<Void> handleGlobalException(Exception e) {
         log.error("Unexpected Exception: {}", e.getMessage(), e); // **記錄異常日誌**
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "系統發生未知錯誤");
     }
@@ -77,8 +77,8 @@ public class GlobalExceptionHandler {
      * @param messageDetail 錯誤訊息（給前端顯示）
      * @return `ApiResponse<Void>` 統一格式的錯誤回應
      */
-    private ApiResponse<Void> buildErrorResponse(HttpStatus status, String error, String messageDetail) {
-        return ApiResponse.<Void>builder()
+    private ApiResponseTemplate<Void> buildErrorResponse(HttpStatus status, String error, String messageDetail) {
+        return ApiResponseTemplate.<Void>builder()
                 .httpStatusCode(status.value())  // **HTTP 狀態碼**
                 .error(error)                    // **錯誤識別碼**
                 .messageDetail(messageDetail)    // **錯誤詳細資訊**

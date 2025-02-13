@@ -1,8 +1,7 @@
 package com.svc.ems.config.security;
 
-import com.alibaba.fastjson2.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.svc.ems.dto.base.ApiResponse;
+import com.svc.ems.dto.base.ApiResponseTemplate;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,7 +33,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         log.warn("Unauthorized request to: {}", request.getRequestURI()); // **記錄未授權請求**
 
         // **構建 API 錯誤回應**
-        ApiResponse<Void> errorResponse = ApiResponse.<Void>builder()
+        ApiResponseTemplate<Void> errorResponse = ApiResponseTemplate.<Void>builder()
                 .httpStatusCode(HttpStatus.UNAUTHORIZED.value()) // **401 狀態碼**
                 .error("UNAUTHORIZED")  // **錯誤類型**
                 .messageDetail("Token is missing or invalid") // **錯誤訊息**

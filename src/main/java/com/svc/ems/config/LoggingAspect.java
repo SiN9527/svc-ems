@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -19,6 +21,9 @@ public class LoggingAspect {
 
     private final HttpServletRequest request;
     private final JwtUtil jwtUtil;
+    // 使用 LoggerFactory 建立 Logger 實例，傳入當前類別作為參數
+    private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
+
 
     public LoggingAspect(HttpServletRequest request, JwtUtil jwtUtil) {
         this.request = request;
@@ -47,7 +52,7 @@ public class LoggingAspect {
             username = jwtUtil.extractUsername(jwt);
         }
 
-        log.info("🔍 [API請求] traceId={} | UserType={} | User={} | Method={} | Args={}",
+        logger.info("🔍 [API請求] traceId={} | UserType={} | User={} | Method={} | Args={}",
                 traceId, userType, username, joinPoint.getSignature(), Arrays.toString(joinPoint.getArgs()));
     }
 
@@ -56,7 +61,7 @@ public class LoggingAspect {
      */
     @AfterThrowing(pointcut = "controllerMethods()", throwing = "exception")
     public void logError(JoinPoint joinPoint, Throwable exception) {
-        log.error("[API異常] Method={} | Message={ } | Exception={}",
+        logger.error("[API異常] Method={} | Message={ } | Exception={}",
                 joinPoint.getSignature(), exception.getMessage(), exception);
     }
 }
