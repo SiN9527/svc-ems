@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-    /**
+    /** http://localhost:8080/swagger-ui/index.html
      * 建立 GroupedOpenApi Bean
      * - 用於定義 API 分組以及指定要掃描的 Controller package
      * - 這裡只掃描 "com.sweetolive.exhibition_backend.controller" 下的 Controller
