@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 定義日誌格式 -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"/>
+    <!-- 設定日誌輸出檔案的存放目錄 -->
+    <property name="LOG_PATH" value="logs"/>
+
+    <!-- Console Appender：輸出到控制台 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- RollingFileAppender：輸出到文件並支援日誌輪轉 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 日誌文件名稱 -->
+        <file>${LOG_PATH}/svc-ems-logger.log</file>
+        <!-- 定義輪轉策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 每日產生一個新日誌文件，並根據日期命名 -->
+            <fileNamePattern>${LOG_PATH}/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 最多保留 30 天的日誌 -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 設定根日誌，使用 CONSOLE 與 FILE Appender -->
+    <root level="info">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+
+    <!-- 若需要針對特定包啟用 DEBUG 等級，可以額外配置 -->
+    <logger name="com.svc.ems" level="debug"/>
+</configuration>
