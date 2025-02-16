@@ -44,8 +44,8 @@ public class BaseServiceImpl implements BaseService {
         String password = req.getPassword();
 
         // 確定身份類型（USER 或 MEMBER）
-        boolean isUser = userDetailsService.userExists(email);
-        boolean isMember = memberDetailsService.memberExists(email);
+        boolean isUser = userDetailsService.userExists(email,password);
+        boolean isMember = memberDetailsService.memberExists(email,password);
 
         if (!isUser && !isMember) {
             return "Invalid email or password.";

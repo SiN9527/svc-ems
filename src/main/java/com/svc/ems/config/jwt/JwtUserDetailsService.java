@@ -36,7 +36,10 @@ public class JwtUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         // 查詢使用者
         UserMain user = userMainRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+                .orElseThrow(() -> new UsernameNotFoundException("Not found with email"));
+        if (!user.getEnabled()) {
+            throw new UsernameNotFoundException("Account is disabled");
+        }
 
         // 透過關聯表查詢該使用者的角色
         List<UserRole> roles = userMainRoleRepository.findRolesByUserId(user.getUserId());
@@ -50,7 +53,7 @@ public class JwtUserDetailsService implements UserDetailsService {
         return new JwtUserDetails(user, authorities);
     }
 
-   public boolean userExists(String email) {
-        return userMainRepository.existsByEmail(email);
+   public boolean userExists(String email, String password) {
+        return userMainRepository.existsByEmailAndPassword(email, password);
     }
 }

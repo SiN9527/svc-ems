@@ -8,9 +8,14 @@ import com.svc.ems.exception.ServiceException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -85,5 +90,29 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())   // **請求的 API 路徑**
                 .traceId(UUID.randomUUID().toString()) // **產生唯一識別碼，方便除錯**
                 .build();
+    }
+
+
+
+
+
+    /**
+     * **處理 `MethodArgumentNotValidException`**
+     * - 當 Controller 方法的參數驗證不通過時，會拋出此異常
+     * - 這裡將驗證錯誤的欄位與錯誤訊息封裝成 Map，並返回給前端
+     *
+     * @param ex 捕捉到的 `MethodArgumentNotValidException`
+     * @return 驗證錯誤的欄位與錯誤訊息的 Map
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public  ApiResponseTemplate<Void> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+
+        // 取得所有驗證錯誤的欄位與對應的錯誤訊息
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.put(error.getField(), error.getDefaultMessage());
+        }
+
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "REQUEST_ERROR", "請求參數錯誤");
     }
 }

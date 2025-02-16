@@ -3,14 +3,14 @@ package com.svc.ems.config.jwt;
 import com.svc.ems.dto.base.JwtMemberDetails;
 import com.svc.ems.entity.MemberMain;
 import com.svc.ems.entity.MemberRole;
+import com.svc.ems.repo.MemberMainRepository;
+import com.svc.ems.repo.MemberMainRoleRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import com.svc.ems.repo.MemberMainRepository;
-import com.svc.ems.repo.MemberMainRoleRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +32,11 @@ public class JwtMemberDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         // 查詢會員
         MemberMain member = memberMainRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Member not found with email: " + email));
+                .orElseThrow(() -> new UsernameNotFoundException("Not found with email"));
+
+        if (!member.getEnabled()) {
+            throw new UsernameNotFoundException("Account is disabled");
+        }
 
         // 透過關聯表查詢該會員的角色
         List<MemberRole> roles = memberMainRoleRepository.findRolesByMemberId(member.getMemberId());
@@ -47,7 +51,7 @@ public class JwtMemberDetailsService implements UserDetailsService {
     }
 
 
-    public boolean memberExists(String email) {
-        return memberMainRepository.existsByEmail(email);
+    public boolean memberExists(String email, String password) {
+        return memberMainRepository.existsByEmailAndPassword(email,password);
     }
 }
