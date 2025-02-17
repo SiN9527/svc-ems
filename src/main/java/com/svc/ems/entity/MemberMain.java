@@ -15,6 +15,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "MEMBER_MAIN", schema = "db_001")
 public class MemberMain {
+
     @Id
     @Size(max = 50)
     @Column(name = "member_id", nullable = false, length = 50)

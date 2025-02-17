@@ -36,7 +36,7 @@ public class MemberMainRole {
     protected void onCreate() {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         this.createdAt = now;
-        this.updatedAt = now;
+
     }
 
     @PreUpdate

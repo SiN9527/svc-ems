@@ -51,7 +51,7 @@ public class JwtMemberDetailsService implements UserDetailsService {
     }
 
 
-    public boolean memberExists(String email, String password) {
-        return memberMainRepository.existsByEmailAndPassword(email,password);
+    public boolean memberExists(String email) {
+        return memberMainRepository.existsByEmail(email);
     }
 }

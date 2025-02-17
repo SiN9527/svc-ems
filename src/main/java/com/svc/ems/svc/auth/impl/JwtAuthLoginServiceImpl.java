@@ -6,6 +6,9 @@ import com.svc.ems.config.jwt.JwtUtil;
 import com.svc.ems.dto.auth.LoginRequest;
 import com.svc.ems.dto.auth.UserLoginResponse;
 import com.svc.ems.dto.base.ApiResponseTemplate;
+import com.svc.ems.entity.MemberMain;
+import com.svc.ems.entity.UserMain;
+import com.svc.ems.repo.MemberMainRepository;
 import com.svc.ems.repo.UserMainRepository;
 import com.svc.ems.svc.auth.JwtAuthLoginService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,18 +31,20 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
     private final JwtUserDetailsService userDetailsService;
     private final JwtMemberDetailsService memberDetailsService;
     private final PasswordEncoder passwordEncoder;
-    private final UserMainRepository userRepository;
+    private final UserMainRepository userMainRepository;
+    private final MemberMainRepository memberRepository;
 
     public JwtAuthLoginServiceImpl(JwtUtil jwtUtil,
                                    JwtUserDetailsService userDetailsService,
                                    JwtMemberDetailsService memberDetailsService,
                                    PasswordEncoder passwordEncoder,
-                                   UserMainRepository userRepository) {
+                                   UserMainRepository userMainRepository, MemberMainRepository memberRepository) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.memberDetailsService = memberDetailsService;
         this.passwordEncoder = passwordEncoder;
-        this.userRepository = userRepository;
+        this.userMainRepository = userMainRepository;
+        this.memberRepository = memberRepository;
     }
 
     @Override
@@ -50,23 +55,33 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
 
         logger.info("login email: {}", email);
         // 確定身份類型（USER 或 MEMBER）
-        boolean isUser = userDetailsService.userExists(email, password);
-        boolean isMember = memberDetailsService.memberExists(email, password);
+        boolean isUser = userDetailsService.userExists(email);
+        boolean isMember = memberDetailsService.memberExists(email);
 
         if (!isUser && !isMember) {
             return ResponseEntity.badRequest().body("Invalid email or password.");
         }
         UserDetails userDetails;
         String type;
-
+        String storedEncryptedPassword;
         try {
             if (isUser) {
+                UserMain user = userMainRepository.findByEmail(email).orElseThrow();
                 userDetails = userDetailsService.loadUserByUsername(email);
-                type = "USER"; // 後台使用者
+                type = "USER";
+                storedEncryptedPassword = user.getPassword(); // **取出加密後的密碼**
             } else {
+                MemberMain member = memberRepository.findByEmail(email).orElseThrow();
                 userDetails = memberDetailsService.loadUserByUsername(email);
-                type = "MEMBER"; // 會員
+                type = "MEMBER";
+                storedEncryptedPassword = member.getPassword(); // **取出加密後的密碼**
             }
+
+            // **比對密碼，不需要解密**
+            if (!passwordEncoder.matches(password, storedEncryptedPassword)) {
+                ResponseEntity.ok(ApiResponseTemplate.fail(400, "Invalid password.", "Invalid email or password."));};
+            // 取得登入 IP 與 User-Agent
+
         } catch (Exception e) {
             if (e.getMessage().equals("Not found with email")) {
                 return ResponseEntity.badRequest().body("Not found with email");

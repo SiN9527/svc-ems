@@ -113,42 +113,42 @@ public class MemberRegisterRequest {
     @JsonProperty("Mobile")
     private String mobile;
 
-    /**
-     * 註冊日期 (格式: YYYY-MM-DD HH:mm:ss)
-     */
-    @NotBlank(message = "Registration date cannot be empty")
-    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}", message = "Registration date must be in YYYY-MM-DD HH:mm:ss format")
-    @JsonProperty("RegistrationDate")
-    private String registrationDate;
+//    /**
+//     * 註冊日期 (格式: YYYY-MM-DD HH:mm:ss)
+//     */
+//    @NotBlank(message = "Registration date cannot be empty")
+//    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}", message = "Registration date must be in YYYY-MM-DD HH:mm:ss format")
+//    @JsonProperty("RegistrationDate")
+//    private String registrationDate;
 
-    /**
-     * 創建者
-     */
-    @NotBlank(message = "Created by cannot be empty")
-    @JsonProperty("CreatedBy")
-    private String createdBy;
-
-    /**
-     * 創建時間 (格式: YYYY-MM-DD HH:mm:ss)
-     */
-    @NotBlank(message = "Created at cannot be empty")
-    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}", message = "Created at must be in YYYY-MM-DD HH:mm:ss format")
-    @JsonProperty("CreatedAt")
-    private String createdAt;
-
-    /**
-     * 更新者
-     */
-    @NotBlank(message = "Updated by cannot be empty")
-    @JsonProperty("UpdatedBy")
-    private String updatedBy;
-
-    /**
-     * 更新時間 (格式: YYYY-MM-DD HH:mm:ss)
-     */
-    @NotBlank(message = "Updated at cannot be empty")
-    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}", message = "Updated at must be in YYYY-MM-DD HH:mm:ss format")
-    @JsonProperty("UpdatedAt")
-    private String updatedAt;
+//    /**
+//     * 創建者
+//     */
+//    @NotBlank(message = "Created by cannot be empty")
+//    @JsonProperty("CreatedBy")
+//    private String createdBy;
+//
+//    /**
+//     * 創建時間 (格式: YYYY-MM-DD HH:mm:ss)
+//     */
+//    @NotBlank(message = "Created at cannot be empty")
+//    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}", message = "Created at must be in YYYY-MM-DD HH:mm:ss format")
+//    @JsonProperty("CreatedAt")
+//    private String createdAt;
+//
+//    /**
+//     * 更新者
+//     */
+//    @NotBlank(message = "Updated by cannot be empty")
+//    @JsonProperty("UpdatedBy")
+//    private String updatedBy;
+//
+//    /**
+//     * 更新時間 (格式: YYYY-MM-DD HH:mm:ss)
+//     */
+//    @NotBlank(message = "Updated at cannot be empty")
+//    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}", message = "Updated at must be in YYYY-MM-DD HH:mm:ss format")
+//    @JsonProperty("UpdatedAt")
+//    private String updatedAt;
 
 }

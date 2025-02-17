@@ -7,7 +7,10 @@ import com.svc.ems.dto.auth.MemberRegisterRequest;
 import com.svc.ems.dto.auth.UserLoginRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.MemberMain;
+import com.svc.ems.entity.MemberMainRole;
+import com.svc.ems.entity.MemberMainRolePk;
 import com.svc.ems.repo.MemberMainRepository;
+import com.svc.ems.repo.MemberMainRoleRepository;
 import com.svc.ems.repo.UserMainRepository;
 import com.svc.ems.svc.auth.MemberAuthService;
 import com.svc.ems.utils.MapperUtils;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.sql.Timestamp;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -36,17 +40,19 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     private final PasswordEncoder passwordEncoder;
     private final UserMainRepository userRepository;
 
+    private final MemberMainRoleRepository memberMainRoleRepository;
     public MemberAuthServiceImpl(MemberMainRepository memberMainRepository, JwtUtil jwtUtil,
                                  JwtUserDetailsService userDetailsService,
                                  JwtMemberDetailsService memberDetailsService,
                                  PasswordEncoder passwordEncoder,
-                                 UserMainRepository userRepository) {
+                                 UserMainRepository userRepository, MemberMainRoleRepository memberMainRoleRepository) {
         this.memberMainRepository = memberMainRepository;
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.memberDetailsService = memberDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
+        this.memberMainRoleRepository = memberMainRoleRepository;
     }
 
 
@@ -61,7 +67,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
 
         // 驗證 email 是否已存在
-        if (userRepository.existsByEmail(req.getEmail())) {
+        if (memberMainRepository.existsByEmail(req.getEmail())) {
             // 使用 ApiResponse.fail() 包裝失敗訊息，再回傳 ResponseEntity
             return ResponseEntity.ok(ApiResponseTemplate.fail(HttpStatus.BAD_REQUEST.value(), "Registration failed",
                     "Email already exists. Please use another email address."
@@ -76,9 +82,22 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         Timestamp timeNow = new Timestamp(System.currentTimeMillis());
         // 建立新使用者實體，並設定相關欄位
         MemberMain entity = MapperUtils.map(req, MemberMain.class);
+        String uuid = UUID.randomUUID().toString();
+        entity.setMemberId(uuid); // 產生隨機的 memberId
         entity.setEnabled(false); // 預設帳號未啟用
         entity.setCreatedAt(timeNow); // 設定建立時間
+        entity.setRegistrationDate(timeNow); // 設定註冊時間\
         memberMainRepository.save(entity);
+
+        MemberMainRolePk pk = new MemberMainRolePk();
+        pk.setMemberId(uuid);
+        pk.setRoleId(2L);
+
+        MemberMainRole memberMainRole = new MemberMainRole();
+        memberMainRole.setPk(pk);
+        memberMainRole.setCreatedBy("SYS");
+
+        memberMainRoleRepository.save(memberMainRole);
 
         // 使用 ApiResponse.success() 包裝成功訊息，再回傳 ResponseEntity
         return ResponseEntity.ok(ApiResponseTemplate.success("User registered successfully."));

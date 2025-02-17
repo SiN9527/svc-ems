@@ -53,7 +53,7 @@ public class JwtUserDetailsService implements UserDetailsService {
         return new JwtUserDetails(user, authorities);
     }
 
-   public boolean userExists(String email, String password) {
-        return userMainRepository.existsByEmailAndPassword(email, password);
+   public boolean userExists(String email) {
+        return userMainRepository.existsByEmail(email);
     }
 }
