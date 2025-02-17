@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <!-- 引用Spring 預設Console的樣式 -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml" />
     <!-- 定義日誌格式 -->
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"/>
