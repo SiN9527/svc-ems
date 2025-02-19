@@ -9,16 +9,17 @@ import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.MemberMainEntity;
 import com.svc.ems.entity.MemberMainRoleEntity;
 import com.svc.ems.entity.MemberMainRolePkEntity;
+import com.svc.ems.exception.ServiceException;
 import com.svc.ems.repo.MemberMainRepository;
 import com.svc.ems.repo.MemberMainRoleRepository;
 import com.svc.ems.repo.UserMainRepository;
+import com.svc.ems.svc.auth.EmailService;
 import com.svc.ems.svc.auth.MemberAuthService;
 import com.svc.ems.utils.MapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,19 +39,23 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     private final JwtUserDetailsService userDetailsService;
     private final JwtMemberDetailsService memberDetailsService;
     private final PasswordEncoder passwordEncoder;
+
+    private final EmailService emailService;
     private final UserMainRepository userRepository;
 
     private final MemberMainRoleRepository memberMainRoleRepository;
+
     public MemberAuthServiceImpl(MemberMainRepository memberMainRepository, JwtUtil jwtUtil,
                                  JwtUserDetailsService userDetailsService,
                                  JwtMemberDetailsService memberDetailsService,
                                  PasswordEncoder passwordEncoder,
-                                 UserMainRepository userRepository, MemberMainRoleRepository memberMainRoleRepository) {
+                                 EmailService emailService, UserMainRepository userRepository, MemberMainRoleRepository memberMainRoleRepository) {
         this.memberMainRepository = memberMainRepository;
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.memberDetailsService = memberDetailsService;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
         this.userRepository = userRepository;
         this.memberMainRoleRepository = memberMainRoleRepository;
     }
@@ -105,10 +110,41 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         return ApiResponseTemplate.success("會員註冊成功！請查收您的 Email 完成驗證.");
     }
 
-
     @Override
     public ApiResponseTemplate<?> memberFindPwd(UserLoginRequest req) {
         return null;
+    }
+
+
+    @Override
+    public ApiResponseTemplate<?> memberForgotPwd(String email) {
+        //  檢查會員是否存在
+        if (!memberMainRepository.existsByEmail(email)) {
+            return ApiResponseTemplate.fail(404, "EMAIL_NOT_FOUND", "該 Email 並未註冊");
+        }
+
+        //  發送密碼重設 Email
+        emailService.sendPasswordResetEmail(email);
+
+        //  回應成功消息
+        return ApiResponseTemplate.success("密碼重設信件已發送，請檢查您的 Email");
+    }
+
+    @Override
+    public ApiResponseTemplate<?> memberResetPwd(String token, String password) {
+        //  解析 Token 取得 Email
+        String email = jwtUtil.extractEmail(token);
+
+        //  查找會員
+        MemberMainEntity member = memberMainRepository.findByEmail(email)
+                .orElseThrow(() -> new ServiceException("無效的驗證連結"));
+
+        //  更新密碼（加密後存入）
+        member.setPassword(passwordEncoder.encode(password));
+        memberMainRepository.save(member);
+
+        //  回應成功消息
+        return ApiResponseTemplate.success("密碼重設成功，請使用新密碼登入！");
     }
 
     @Override
@@ -137,10 +173,9 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     }
 
 
-
     // 密碼格式驗證
     private boolean isValidPassword(String password) {
-      // 密碼必須包含大寫字母、小寫字母、數字，且長度至少 8 位
+        // 密碼必須包含大寫字母、小寫字母、數字，且長度至少 8 位
         return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$");
     }
 

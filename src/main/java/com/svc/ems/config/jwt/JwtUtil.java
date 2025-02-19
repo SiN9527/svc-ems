@@ -80,12 +80,48 @@ public class JwtUtil {
         return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
+    /**
+     * 產生 Email 驗證 Token（24 小時有效）
+     *
+     * @param email 會員 Email
+     * @return JWT Token
+     */
     public String generateVerificationToken(String email) {
         return Jwts.builder()
-                .setSubject(email) // 設定 Token 持有者
+                .setSubject(email)
+                .claim("purpose", "EMAIL_VERIFICATION") // 標示用途
+                .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)) // 24 小時有效
-                .signWith(secretKey, SignatureAlgorithm.HS256) // 簽名
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    /**
+     * 產生密碼重設 Token（30 分鐘有效）
+     *
+     * @param email 會員 Email
+     * @return JWT Token
+     */
+    public String generatePasswordResetToken(String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("purpose", "PASSWORD_RESET") // 標示用途
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 30 * 60 * 1000)) // 30 分鐘有效
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    /**
+     * 解析 Token 取得 Email
+     */
+    public String extractEmail(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
     }
 }
 

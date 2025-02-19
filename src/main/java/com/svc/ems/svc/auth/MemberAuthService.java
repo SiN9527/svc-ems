@@ -30,5 +30,9 @@ public interface MemberAuthService {
     // 更新密碼
     public ApiResponseTemplate<?> memberUpdatePwd();
 
+    public ApiResponseTemplate<?> memberForgotPwd(String email);
+
+    public ApiResponseTemplate<?> memberResetPwd(String token, String password);
+
 
 }
