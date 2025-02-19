@@ -5,12 +5,17 @@ import com.svc.ems.dto.auth.UserLoginRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Map;
+
 public interface MemberAuthService {
 
 
 
     // 註冊
     public ApiResponseTemplate<String> memberRegister(MemberRegisterRequest req);
+
+    // 驗證
+    public ApiResponseTemplate<String> verifyEmail(Map<String, String> req);
 
     // 忘記密碼
     public ApiResponseTemplate<?> memberFindPwd(UserLoginRequest req);

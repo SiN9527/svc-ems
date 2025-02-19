@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth/member")
 public class MemberAuthController {
@@ -29,5 +31,10 @@ public class MemberAuthController {
 
         // 返回 JWT 和其他信息
         return memberAuthService.memberRegister(req);
+    }
+
+    @PostMapping("/verify")
+    public ApiResponseTemplate<String> verifyEmail(@RequestBody Map<String, String> req){
+        return memberAuthService.verifyEmail(req);
     }
 }

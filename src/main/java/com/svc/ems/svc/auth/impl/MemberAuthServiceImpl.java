@@ -9,6 +9,7 @@ import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.MemberMainEntity;
 import com.svc.ems.entity.MemberMainRoleEntity;
 import com.svc.ems.entity.MemberMainRolePkEntity;
+import com.svc.ems.entity.UserMainEntity;
 import com.svc.ems.exception.ServiceException;
 import com.svc.ems.repo.MemberMainRepository;
 import com.svc.ems.repo.MemberMainRoleRepository;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.sql.Timestamp;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -106,8 +108,39 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         memberMainRole.setCreatedBy("SYS"); // 系統自動輸入
         memberMainRoleRepository.save(memberMainRole);
 
+        emailService.sendVerificationEmail(entity.getEmail());
         // 使用 ApiResponse.success() 包裝成功訊息，再回傳 ResponseEntity
         return ApiResponseTemplate.success("會員註冊成功！請查收您的 Email 完成驗證.");
+    }
+
+    @Override
+    public ApiResponseTemplate<String> verifyEmail(Map<String, String> req) {
+        String token = req.get("token");
+
+        // **解析 Token**
+        String email;
+        try {
+            email = jwtUtil.extractUsername(token); // **從 Token 取得 Email**
+        } catch (Exception e) {
+            return ApiResponseTemplate.fail(400, "TOKEN_INVALID", "驗證失敗，無效的 Token");
+        }
+
+        // **檢查 Token 是否過期**
+        if (jwtUtil.isTokenExpired(token)) {
+            return ApiResponseTemplate.fail(400, "TOKEN_EXPIRED", "驗證失敗，Token 已過期");
+        }
+
+        // **更新資料庫，標記使用者已驗證**
+        MemberMainEntity member = memberMainRepository.findByEmail(email)
+                .orElse(null);
+        if (member == null) {
+            return ApiResponseTemplate.fail(404, "USER_NOT_FOUND", "找不到此使用者");
+        }
+
+        member.setEnabled(true);
+        memberMainRepository.save(member);
+
+        return ApiResponseTemplate.success("驗證成功，您的帳戶已啟用！");
     }
 
     @Override

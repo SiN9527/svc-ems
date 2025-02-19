@@ -76,7 +76,7 @@ public class JwtUtil {
     }
 
     // **判斷 Token 是否過期**
-    private boolean isTokenExpired(String token) {
+    public boolean isTokenExpired(String token) {
         return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
