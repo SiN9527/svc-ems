@@ -79,6 +79,14 @@ public class JwtUtil {
     private boolean isTokenExpired(String token) {
         return extractClaim(token, Claims::getExpiration).before(new Date());
     }
+
+    public String generateVerificationToken(String email) {
+        return Jwts.builder()
+                .setSubject(email) // 設定 Token 持有者
+                .setExpiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)) // 24 小時有效
+                .signWith(secretKey, SignatureAlgorithm.HS256) // 簽名
+                .compact();
+    }
 }
 
 //public class JwtUtil {

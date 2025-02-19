@@ -5,7 +5,7 @@ import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
 import com.svc.ems.dto.auth.UserRegisterRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
-import com.svc.ems.entity.UserMain;
+import com.svc.ems.entity.UserMainEntity;
 import com.svc.ems.repo.UserMainRepository;
 import com.svc.ems.svc.auth.UserAuthService;
 import lombok.extern.slf4j.Slf4j;
@@ -49,18 +49,18 @@ public class UserAuthServiceImpl implements UserAuthService {
      * @return 統一格式的 ApiResponse 物件，payload 為成功訊息
      */
 
-    public ResponseEntity<ApiResponseTemplate<String>> userRegister(@RequestBody UserRegisterRequest req) {
+    public ApiResponseTemplate<String> userRegister(@RequestBody UserRegisterRequest req) {
 
 
         if (userRepository.existsByEmail(req.getEmail())) {
             // 使用 ApiResponse.fail() 包裝失敗訊息，再回傳 ResponseEntity
-            return ResponseEntity.ok(ApiResponseTemplate.fail(HttpStatus.BAD_REQUEST.value(), "Registration failed",
+            return ApiResponseTemplate.fail(HttpStatus.BAD_REQUEST.value(), "Registration failed",
                     "Email already exists. Please use another email address."
-            ));
+            );
 
         }
         // 建立新使用者實體，並設定相關欄位
-        UserMain user = new UserMain();
+        UserMainEntity user = new UserMainEntity();
         user.setEmail(req.getEmail());
         user.setUserName(req.getUserName());
         user.setEnabled(false); // 預設帳號未啟用
@@ -70,7 +70,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         userRepository.save(user);
         logger.info("User registered successfully: {}", user.getEmail());
         // 使用 ApiResponse.success() 包裝成功訊息，再回傳 ResponseEntity
-        return ResponseEntity.ok(ApiResponseTemplate.success("User registered successfully."));
+        return ApiResponseTemplate.success("User registered successfully.");
     }
 
 

@@ -1,8 +1,8 @@
 package com.svc.ems.config.jwt;
 
 import com.svc.ems.dto.base.JwtMemberDetails;
-import com.svc.ems.entity.MemberMain;
-import com.svc.ems.entity.MemberRole;
+import com.svc.ems.entity.MemberMainEntity;
+import com.svc.ems.entity.MemberRoleEntity;
 import com.svc.ems.repo.MemberMainRepository;
 import com.svc.ems.repo.MemberMainRoleRepository;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,7 +31,7 @@ public class JwtMemberDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         // 查詢會員
-        MemberMain member = memberMainRepository.findByEmail(email)
+        MemberMainEntity member = memberMainRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Not found with email"));
 
         if (!member.getEnabled()) {
@@ -39,7 +39,7 @@ public class JwtMemberDetailsService implements UserDetailsService {
         }
 
         // 透過關聯表查詢該會員的角色
-        List<MemberRole> roles = memberMainRoleRepository.findRolesByMemberId(member.getMemberId());
+        List<MemberRoleEntity> roles = memberMainRoleRepository.findRolesByMemberId(member.getMemberId());
 
         // 轉換成 Spring Security 需要的角色格式
         List<GrantedAuthority> authorities = roles.stream()

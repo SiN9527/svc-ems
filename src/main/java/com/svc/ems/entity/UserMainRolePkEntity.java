@@ -7,11 +7,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 @Data
 @Embeddable
-public class UserMainRolePk implements Serializable {
+public class UserMainRolePkEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -24,9 +23,9 @@ public class UserMainRolePk implements Serializable {
     @Column(name = "role_id", nullable = false)
     private Long roleId;
 
-    public UserMainRolePk() {}
+    public UserMainRolePkEntity() {}
 
-    public UserMainRolePk(String userId, Long roleId) {
+    public UserMainRolePkEntity(String userId, Long roleId) {
         this.userId = userId;
         this.roleId = roleId;
     }

@@ -6,8 +6,8 @@ import com.svc.ems.config.jwt.JwtUtil;
 import com.svc.ems.dto.auth.LoginRequest;
 import com.svc.ems.dto.auth.UserLoginResponse;
 import com.svc.ems.dto.base.ApiResponseTemplate;
-import com.svc.ems.entity.MemberMain;
-import com.svc.ems.entity.UserMain;
+import com.svc.ems.entity.MemberMainEntity;
+import com.svc.ems.entity.UserMainEntity;
 import com.svc.ems.repo.MemberMainRepository;
 import com.svc.ems.repo.UserMainRepository;
 import com.svc.ems.svc.auth.JwtAuthLoginService;
@@ -48,7 +48,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
     }
 
     @Override
-    public ResponseEntity<?> authLogin(LoginRequest loginRequest) {
+    public ApiResponseTemplate<UserLoginResponse> authLogin(LoginRequest loginRequest) {
 
         String email = loginRequest.getEmail();
         String password = loginRequest.getPassword();
@@ -59,19 +59,19 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         boolean isMember = memberDetailsService.memberExists(email);
 
         if (!isUser && !isMember) {
-            return ResponseEntity.badRequest().body("Invalid email or password.");
+            return ApiResponseTemplate.fail(400, "login error.", "Invalid email or password.");
         }
         UserDetails userDetails;
         String type;
         String storedEncryptedPassword;
         try {
             if (isUser) {
-                UserMain user = userMainRepository.findByEmail(email).orElseThrow();
+                UserMainEntity user = userMainRepository.findByEmail(email).orElseThrow();
                 userDetails = userDetailsService.loadUserByUsername(email);
                 type = "USER";
                 storedEncryptedPassword = user.getPassword(); // **取出加密後的密碼**
             } else {
-                MemberMain member = memberRepository.findByEmail(email).orElseThrow();
+                MemberMainEntity member = memberRepository.findByEmail(email).orElseThrow();
                 userDetails = memberDetailsService.loadUserByUsername(email);
                 type = "MEMBER";
                 storedEncryptedPassword = member.getPassword(); // **取出加密後的密碼**
@@ -84,18 +84,19 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
 
         } catch (Exception e) {
             if (e.getMessage().equals("Not found with email")) {
-                return ResponseEntity.badRequest().body("Not found with email");
+                return ApiResponseTemplate.fail(400, "login error.", " Email not found.");
             } else if (e.getMessage().equals("Account is disabled")) {
-                return ResponseEntity.badRequest().body("Account is disabled");
+                return ApiResponseTemplate.fail(400, "login error.", "Account is disabled.");
             } else {
-                return ResponseEntity.badRequest().body("something error.");
+                return ApiResponseTemplate.fail(400, "runtime error.", "Please connect IT.");
             }
         }
 
 
         // 驗證密碼
         if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-            return ResponseEntity.badRequest().body("Invalid email or password.");
+            return ApiResponseTemplate.fail(400, "login error.", "Invalid email or password.");
+
         }
 
         // 生成 JWT
@@ -109,7 +110,15 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         logger.info("UserLoginResponse: {}", new UserLoginResponse(token, roles));
         // 返回 JWT 和其他信息
         // 使用 ApiResponse.success() 包裝成功訊息與資料，再回傳 ResponseEntity
-        return ResponseEntity.ok(ApiResponseTemplate.success(new UserLoginResponse(token, roles)));
+
+        // 4️⃣ 生成 Email 驗證 Token
+        String verificationToken = jwtUtil.generateVerificationToken(email);
+
+        // 5️⃣ 發送驗證郵件
+        //emailService.sendVerificationEmail(req.getEmail(), verificationToken);
+
+        // 6️⃣ 回應成功消息
+        return ApiResponseTemplate.success("會員登入成功 ",new UserLoginResponse(token, roles));
 
     }
 

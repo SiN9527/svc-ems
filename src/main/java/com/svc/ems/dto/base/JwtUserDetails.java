@@ -1,6 +1,6 @@
 package com.svc.ems.dto.base;
 
-import com.svc.ems.entity.UserMain;
+import com.svc.ems.entity.UserMainEntity;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,10 +11,10 @@ import java.util.List;
 @Data
 public class JwtUserDetails implements UserDetails {
 
-    private final UserMain userMain;
+    private final UserMainEntity userMain;
     private final List<GrantedAuthority> authorities; // 新增角色清單
 
-    public JwtUserDetails(UserMain userMain, List<GrantedAuthority> authorities) {
+    public JwtUserDetails(UserMainEntity userMain, List<GrantedAuthority> authorities) {
         this.userMain = userMain;
         this.authorities = authorities; // 接收角色權限
     }
@@ -61,7 +61,7 @@ public class JwtUserDetails implements UserDetails {
     }
 
 
-    public UserMain getUser() {
+    public UserMainEntity getUser() {
         return userMain;
     }
 }

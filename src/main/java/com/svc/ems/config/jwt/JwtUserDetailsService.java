@@ -1,7 +1,7 @@
 package com.svc.ems.config.jwt;
 
-import com.svc.ems.entity.UserMain;
-import com.svc.ems.entity.UserRole;
+import com.svc.ems.entity.UserMainEntity;
+import com.svc.ems.entity.UserRoleEntity;
 
 import com.svc.ems.dto.base.JwtUserDetails;
 import com.svc.ems.repo.UserMainRepository;
@@ -35,14 +35,14 @@ public class JwtUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         // 查詢使用者
-        UserMain user = userMainRepository.findByEmail(email)
+        UserMainEntity user = userMainRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Not found with email"));
         if (!user.getEnabled()) {
             throw new UsernameNotFoundException("Account is disabled");
         }
 
         // 透過關聯表查詢該使用者的角色
-        List<UserRole> roles = userMainRoleRepository.findRolesByUserId(user.getUserId());
+        List<UserRoleEntity> roles = userMainRoleRepository.findRolesByUserId(user.getUserId());
 
         // 轉換成 Spring Security 需要的角色格式
         List<GrantedAuthority> authorities = roles.stream()

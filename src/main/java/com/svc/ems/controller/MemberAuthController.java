@@ -2,6 +2,7 @@ package com.svc.ems.controller;
 
 import com.svc.ems.dto.auth.MemberRegisterRequest;
 import com.svc.ems.dto.auth.UserRegisterRequest;
+import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.svc.auth.MemberAuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +25,7 @@ public class MemberAuthController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<?> memberRegister(@RequestBody MemberRegisterRequest req) {
+    public ApiResponseTemplate<String> memberRegister(@RequestBody MemberRegisterRequest req) {
 
         // 返回 JWT 和其他信息
         return memberAuthService.memberRegister(req);

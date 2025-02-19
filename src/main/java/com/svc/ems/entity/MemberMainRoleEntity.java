@@ -3,17 +3,15 @@ package com.svc.ems.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.sql.Timestamp;
 @Data
 @Entity
 @Table(name = "MEMBER_MAIN_ROLE", schema = "db_001")
-public class MemberMainRole {
+public class MemberMainRoleEntity {
 
     @EmbeddedId
-    private MemberMainRolePk pk; // 複合主鍵
+    private MemberMainRolePkEntity pk; // 複合主鍵
 
     @Size(max = 50)
     @Column(name = "created_by", length = 50)

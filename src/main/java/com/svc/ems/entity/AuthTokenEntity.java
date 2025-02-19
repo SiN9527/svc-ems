@@ -4,17 +4,13 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 
 @Data
 @Entity
 @Table(name = "AUTH_TOKEN", schema = "db_001")
-public class AuthToken {
+public class AuthTokenEntity {
     @Id
     @Column(name = "id", nullable = false)
     private Long id;

@@ -4,17 +4,14 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 
 @Data
 @Entity
 @Table(name = "USER_MAIN", schema = "db_001")
-public class UserMain {
+public class UserMainEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 設定自動生成 ID
     @Column(name = "user_id", nullable = false)

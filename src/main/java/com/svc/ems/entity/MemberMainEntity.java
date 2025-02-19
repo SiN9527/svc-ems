@@ -4,17 +4,14 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 
 @Data
 @Entity
 @Table(name = "MEMBER_MAIN", schema = "db_001")
-public class MemberMain {
+public class MemberMainEntity {
 
     @Id
     @Size(max = 50)

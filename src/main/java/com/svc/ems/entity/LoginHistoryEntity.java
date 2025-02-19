@@ -4,17 +4,14 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 
 @Data
 @Entity
 @Table(name = "LOGIN_HISTORY", schema = "db_001")
-public class LoginHistory {
+public class LoginHistoryEntity {
     @Id
     @Column(name = "id", nullable = false)
     private Long id;

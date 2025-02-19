@@ -1,6 +1,6 @@
 package com.svc.ems.dto.base;
 
-import com.svc.ems.entity.MemberMain;
+import com.svc.ems.entity.MemberMainEntity;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,10 +10,10 @@ import java.util.Collection;
 @Data
 public class JwtMemberDetails implements UserDetails {
 
-    private final MemberMain member;
+    private final MemberMainEntity member;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public JwtMemberDetails(MemberMain member, Collection<? extends GrantedAuthority> authorities) {
+    public JwtMemberDetails(MemberMainEntity member, Collection<? extends GrantedAuthority> authorities) {
         this.member = member;
         this.authorities = authorities;
     }
