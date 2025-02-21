@@ -30,20 +30,20 @@ public class EmailServiceImpl implements EmailService {
      */
     @Override
     public void sendVerificationEmail(String email) {
-        // 1️⃣ 產生 Email 驗證 Token，24 小時有效
+        // 產生 Email 驗證 Token，24 小時有效
         String verificationToken = jwtUtil.generateVerificationToken(email);
 
-        // 2️⃣ 準備驗證連結
-        String verificationLink = "https://http://localhost:8080/verify?token=" + verificationToken;
+        //  準備驗證連結（本機環境）
+        String verificationLink = "http://localhost:8080/api/auth/memberverify?token=" + verificationToken;
 
-        // 3️⃣ 設定信件內容
-        String subject = "會員帳戶驗證";
-        String content = "<h3>親愛的會員，</h3>"
-                + "<p>請點擊下方鏈接來驗證您的帳戶：</p>"
-                + "<p><a href='" + verificationLink + "'>點此驗證 Email</a></p>"
-                + "<p>此驗證連結 24 小時內有效。</p>";
+        //  設定信件內容
+        String subject = "Member Account Verification";
+        String content = "<h3>Dear Member,</h3>"
+                + "<p>Please click the link below to verify your account:</p>"
+                + "<p><a href='" + verificationLink + "'>Click here to verify your account</a></p>"
+                + "<p>This link will expire in 24 hours.</p>";
 
-        // 4️⃣ 發送 Email
+        //  發送 Email
         sendEmail(email, subject, content);
     }
 

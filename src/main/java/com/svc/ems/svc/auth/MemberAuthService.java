@@ -2,6 +2,7 @@ package com.svc.ems.svc.auth;
 
 import com.svc.ems.dto.auth.MemberRegisterRequest;
 import com.svc.ems.dto.auth.UserLoginRequest;
+import com.svc.ems.dto.auth.VerifyRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import org.springframework.http.ResponseEntity;
 
@@ -15,7 +16,7 @@ public interface MemberAuthService {
     public ApiResponseTemplate<String> memberRegister(MemberRegisterRequest req);
 
     // 驗證
-    public ApiResponseTemplate<String> verifyEmail(Map<String, String> req);
+    public ApiResponseTemplate<String> verifyEmail(VerifyRequest req);
 
     // 忘記密碼
     public ApiResponseTemplate<?> memberFindPwd(UserLoginRequest req);

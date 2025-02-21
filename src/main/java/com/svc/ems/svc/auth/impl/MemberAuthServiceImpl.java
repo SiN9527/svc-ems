@@ -5,6 +5,7 @@ import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
 import com.svc.ems.dto.auth.MemberRegisterRequest;
 import com.svc.ems.dto.auth.UserLoginRequest;
+import com.svc.ems.dto.auth.VerifyRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.MemberMainEntity;
 import com.svc.ems.entity.MemberMainRoleEntity;
@@ -21,12 +22,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -114,8 +118,8 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     }
 
     @Override
-    public ApiResponseTemplate<String> verifyEmail(Map<String, String> req) {
-        String token = req.get("token");
+    public ApiResponseTemplate<String> verifyEmail(VerifyRequest req) {
+        String token = req.getToken();
 
         // **解析 Token**
         String email;
@@ -139,8 +143,17 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
         member.setEnabled(true);
         memberMainRepository.save(member);
+        // **自動登入：發送 JWT Token**
+        // 生成 JWT
 
-        return ApiResponseTemplate.success("驗證成功，您的帳戶已啟用！");
+        UserDetails userDetails = memberDetailsService.loadUserByUsername(email);
+       String type = "MEMBER";
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(auth -> auth.getAuthority().replace("ROLE_", ""))
+                .toList();
+        String jwtToken = jwtUtil.generateToken(email, "type", roles);
+
+        return ApiResponseTemplate.success("Validation Success , Auto Login", jwtToken);
     }
 
     @Override

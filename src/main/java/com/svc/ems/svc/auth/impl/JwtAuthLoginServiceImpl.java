@@ -77,7 +77,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
                 storedEncryptedPassword = member.getPassword(); // **取出加密後的密碼**
             }
 
-            // **比對密碼，不需要解密**
+            // **比對密碼解密**
             if (!passwordEncoder.matches(password, storedEncryptedPassword)) {
                 ResponseEntity.ok(ApiResponseTemplate.fail(400, "Invalid password.", "Invalid email or password."));};
             // 取得登入 IP 與 User-Agent

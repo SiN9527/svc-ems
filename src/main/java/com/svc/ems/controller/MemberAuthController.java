@@ -2,6 +2,7 @@ package com.svc.ems.controller;
 
 import com.svc.ems.dto.auth.MemberRegisterRequest;
 import com.svc.ems.dto.auth.UserRegisterRequest;
+import com.svc.ems.dto.auth.VerifyRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.svc.auth.MemberAuthService;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +35,7 @@ public class MemberAuthController {
     }
 
     @PostMapping("/verify")
-    public ApiResponseTemplate<String> verifyEmail(@RequestBody Map<String, String> req){
+    public ApiResponseTemplate<String> verifyEmail(@RequestBody VerifyRequest req){
         return memberAuthService.verifyEmail(req);
     }
 }
