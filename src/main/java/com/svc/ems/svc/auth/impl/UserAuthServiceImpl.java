@@ -27,18 +27,18 @@ public class UserAuthServiceImpl implements UserAuthService {
     private final JwtUserDetailsService userDetailsService;
     private final JwtMemberDetailsService memberDetailsService;
     private final PasswordEncoder passwordEncoder;
-    private final UserMainRepository userRepository;
+    private final UserMainRepository userMainRepository;
 
     public UserAuthServiceImpl(JwtUtil jwtUtil,
                                JwtUserDetailsService userDetailsService,
                                JwtMemberDetailsService memberDetailsService,
                                PasswordEncoder passwordEncoder,
-                               UserMainRepository userRepository) {
+                               UserMainRepository userMainRepository) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.memberDetailsService = memberDetailsService;
         this.passwordEncoder = passwordEncoder;
-        this.userRepository = userRepository;
+        this.userMainRepository = userMainRepository;
     }
 
 
@@ -49,10 +49,11 @@ public class UserAuthServiceImpl implements UserAuthService {
      * @return 統一格式的 ApiResponse 物件，payload 為成功訊息
      */
 
-    public ApiResponseTemplate<String> userRegister(@RequestBody UserRegisterRequest req) {
+    public ApiResponseTemplate<?> userRegister(@RequestBody UserRegisterRequest req) {
 
 
-        if (userRepository.existsByEmail(req.getEmail())) {
+        if (userMainRepository.existsByEmail(req.getEmail())) {
+            log.info("User registration failed: Email already exists. Please use another email address.");
             // 使用 ApiResponse.fail() 包裝失敗訊息，再回傳 ResponseEntity
             return ApiResponseTemplate.fail(HttpStatus.BAD_REQUEST.value(), "Registration failed",
                     "Email already exists. Please use another email address."
@@ -67,7 +68,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         // 密碼加密處理
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         // 儲存使用者資料到資料庫
-        userRepository.save(user);
+        userMainRepository.save(user);
         logger.info("User registered successfully: {}", user.getEmail());
         // 使用 ApiResponse.success() 包裝成功訊息，再回傳 ResponseEntity
         return ApiResponseTemplate.success("User registered successfully.");

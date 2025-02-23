@@ -3,6 +3,7 @@ package com.svc.ems.svc.auth.impl;
 import com.svc.ems.config.jwt.JwtMemberDetailsService;
 import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
+import com.svc.ems.dto.auth.MemberProfileCookie;
 import com.svc.ems.dto.auth.MemberRegisterRequest;
 import com.svc.ems.dto.auth.UserLoginRequest;
 import com.svc.ems.dto.auth.VerifyRequest;
@@ -18,6 +19,8 @@ import com.svc.ems.repo.UserMainRepository;
 import com.svc.ems.svc.auth.EmailService;
 import com.svc.ems.svc.auth.MemberAuthService;
 import com.svc.ems.utils.MapperUtils;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,8 +121,8 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     }
 
     @Override
-    public ApiResponseTemplate<String> verifyEmail(VerifyRequest req) {
-        String token = req.getToken();
+    public ApiResponseTemplate<String> verifyEmail(String token, HttpServletResponse response) {
+
 
         // **解析 Token**
         String email;
@@ -147,13 +150,55 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         // 生成 JWT
 
         UserDetails userDetails = memberDetailsService.loadUserByUsername(email);
-       String type = "MEMBER";
+        String type = "MEMBER";
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(auth -> auth.getAuthority().replace("ROLE_", ""))
                 .toList();
         String jwtToken = jwtUtil.generateToken(email, "type", roles);
 
+        Cookie cookie = new Cookie("AUTH_TOKEN", jwtToken);
+        cookie.setHttpOnly(true);  // 無法透過 JavaScript 存取
+        cookie.setSecure(true);    // 只允許 HTTPS
+        cookie.setPath("/");       // 全域有效
+        cookie.setMaxAge(24 * 60 * 60);  // 1 天
+        response.addCookie(cookie);
+
         return ApiResponseTemplate.success("Validation Success , Auto Login", jwtToken);
+    }
+
+    @Override
+    public ApiResponseTemplate<MemberProfileCookie> getMemberProfile(String token) {
+        if (token == null) {
+            return ApiResponseTemplate.fail(401, "UNAUTHORIZED", "未登入，請重新登入");
+        }
+
+        // 解析 Token 取得 Email
+        String email;
+        try {
+            email = jwtUtil.extractUsername(token);
+        } catch (Exception e) {
+            return ApiResponseTemplate.fail(400, "TOKEN_INVALID", "驗證失敗，無效的 Token");
+        }
+
+        // 檢查 Token 是否過期
+        if (jwtUtil.isTokenExpired(token)) {
+            return ApiResponseTemplate.fail(400, "TOKEN_EXPIRED", "驗證失敗，Token 已過期，請重新登入");
+        }
+
+        // 從資料庫查詢用戶資訊
+        MemberMainEntity member = memberMainRepository.findByEmail(email).orElse(null);
+
+        if (member == null) {
+            return ApiResponseTemplate.fail(404, "USER_NOT_FOUND", "找不到此使用者");
+        }
+
+        // 建立回應對象
+        MemberProfileCookie response = new MemberProfileCookie();
+        response.setEmail(email);
+        response.setMemberType("MEMBER");
+        response.setMemberId(member.getMemberId());
+
+        return ApiResponseTemplate.success("get member profile successful!",response);
     }
 
     @Override

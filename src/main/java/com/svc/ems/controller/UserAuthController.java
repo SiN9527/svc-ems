@@ -24,7 +24,7 @@ public class UserAuthController {
 
 
     @PostMapping("/register")
-    public ApiResponseTemplate<String> register(@RequestBody UserRegisterRequest req) {
+    public ApiResponseTemplate<?> register(@RequestBody UserRegisterRequest req) {
         // 返回 JWT 和其他信息
         return userAuthService.userRegister(req);
     }

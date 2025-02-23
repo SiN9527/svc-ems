@@ -34,7 +34,7 @@ public class EmailServiceImpl implements EmailService {
         String verificationToken = jwtUtil.generateVerificationToken(email);
 
         //  準備驗證連結（本機環境）
-        String verificationLink = "http://localhost:8080/api/auth/memberverify?token=" + verificationToken;
+        String verificationLink = "http://localhost:5173/verify?token=" + verificationToken;
 
         //  設定信件內容
         String subject = "Member Account Verification";
