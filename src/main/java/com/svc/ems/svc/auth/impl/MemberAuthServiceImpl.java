@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -280,8 +281,17 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     }
 
     @Override
-    public ApiResponseTemplate<?> memberUpdatePwd() {
-        return null;
+    public ApiResponseTemplate<?> memberUpdatePwd(@CookieValue(value = "AUTH_TOKEN", required = false) MemberPwdUpdateRequest req) {
+
+
+        Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(req.getToken(), memberMainRepository);
+        if (member.isEmpty()) {
+            return ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND", "找不到此使用者");
+        }
+        String newPassword = (passwordEncoder.encode(req.getNewPassword()));
+        member.get().setPassword(newPassword);
+        memberMainRepository.save(member.get());
+        return ApiResponseTemplate.success("");
     }
 
 

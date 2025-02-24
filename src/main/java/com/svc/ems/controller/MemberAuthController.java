@@ -55,4 +55,11 @@ public class MemberAuthController {
     public ApiResponseTemplate<MemberProfileResponse> memberGetProfile(@CookieValue(value = "AUTH_TOKEN", required = false) String token){
         return memberAuthService.memberGetProfile(token);
     }
+
+    @PostMapping("/updatePwd")
+
+    public ApiResponseTemplate<?> memberUpdatePwd(@CookieValue(value = "AUTH_TOKEN", required = false)MemberPwdUpdateRequest req){
+        return memberAuthService.memberUpdatePwd(req);
+    }
+
 }
