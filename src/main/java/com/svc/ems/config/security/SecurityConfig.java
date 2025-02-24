@@ -6,9 +6,11 @@ import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,7 +22,12 @@ import com.svc.ems.repo.MemberMainRepository;
 import com.svc.ems.repo.MemberMainRoleRepository;
 import com.svc.ems.repo.UserMainRepository;
 import com.svc.ems.repo.UserMainRoleRepository;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
+import java.util.List;
 
 
 @Configuration // 標記為配置類別，Spring Boot 會自動加載
@@ -33,6 +40,8 @@ public class SecurityConfig {
     // 注入自定義的未授權處理類別，當用戶未授權時將由此類處理
     @Resource
     private CustomAuthenticationEntryPoint customEntryPoint;
+    @Resource
+    private CorsConfigurationSource source;
 
     /**
      * 定義 SecurityFilterChain Bean，設定安全性過濾鏈
@@ -52,7 +61,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 放行 /api/auth/** 路徑，不需要 JWT 認證
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/test/**").permitAll()
+                        // 允許所有 OPTIONS 請求，避免預檢請求被阻擋 (放行Token)
+                        // 瀏覽器會先發送一個 OPTIONS 預檢請求來確認 CORS 配置是否允許這樣的請求
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // 放行 Swagger 相關路徑
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         // 其他所有請求皆需要驗證
