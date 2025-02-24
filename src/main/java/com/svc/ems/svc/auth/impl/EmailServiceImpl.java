@@ -59,14 +59,14 @@ public class EmailServiceImpl implements EmailService {
         String resetToken = jwtUtil.generatePasswordResetToken(email);
 
         // 2️⃣ 準備密碼重設連結
-        String resetLink = "https://your-domain.com/reset-password?token=" + resetToken;
+        String resetLink = "http://localhost:5173/verify?token=" + resetToken;
 
         // 3️⃣ 設定信件內容
-        String subject = "密碼重設請求";
-        String content = "<h3>親愛的會員，</h3>"
-                + "<p>我們收到您的密碼重設請求，請點擊下方鏈接來重設您的密碼：</p>"
-                + "<p><a href='" + resetLink + "'>點此重設密碼</a></p>"
-                + "<p>此連結 30 分鐘內有效，如果您沒有請求重設密碼，請忽略此郵件。</p>";
+        String subject = "reset your password";
+        String content = "<h3>Dear Member,</h3>"
+                + "<p>Please click the link below to reset your password:</p>"
+                + "<p><a href='" + resetLink + "'>Click here to reset your password</a></p>"
+                + "<p>This link will expire in 30 minutes.</p>";
 
         // 4️⃣ 發送 Email
         sendEmail(email, subject, content);

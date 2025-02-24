@@ -3,10 +3,7 @@ package com.svc.ems.svc.auth.impl;
 import com.svc.ems.config.jwt.JwtMemberDetailsService;
 import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
-import com.svc.ems.dto.auth.MemberProfileCookie;
-import com.svc.ems.dto.auth.MemberRegisterRequest;
-import com.svc.ems.dto.auth.UserLoginRequest;
-import com.svc.ems.dto.auth.VerifyRequest;
+import com.svc.ems.dto.auth.*;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.MemberMainEntity;
 import com.svc.ems.entity.MemberMainRoleEntity;
@@ -29,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -53,12 +51,13 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     private final UserMainRepository userRepository;
 
     private final MemberMainRoleRepository memberMainRoleRepository;
+    private final MapperUtils mapperUtils;
 
     public MemberAuthServiceImpl(MemberMainRepository memberMainRepository, JwtUtil jwtUtil,
                                  JwtUserDetailsService userDetailsService,
                                  JwtMemberDetailsService memberDetailsService,
                                  PasswordEncoder passwordEncoder,
-                                 EmailService emailService, UserMainRepository userRepository, MemberMainRoleRepository memberMainRoleRepository) {
+                                 EmailService emailService, UserMainRepository userRepository, MemberMainRoleRepository memberMainRoleRepository, MapperUtils mapperUtils) {
         this.memberMainRepository = memberMainRepository;
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
@@ -67,6 +66,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         this.emailService = emailService;
         this.userRepository = userRepository;
         this.memberMainRoleRepository = memberMainRoleRepository;
+        this.mapperUtils = mapperUtils;
     }
 
 
@@ -167,7 +167,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     }
 
     @Override
-    public ApiResponseTemplate<MemberProfileCookie> getMemberProfile(String token) {
+    public ApiResponseTemplate<MemberProfileResponse> memberGetProfile(@CookieValue(value = "AUTH_TOKEN", required = false) String token) {
         if (token == null) {
             return ApiResponseTemplate.fail(401, "UNAUTHORIZED", "未登入，請重新登入");
         }
@@ -193,11 +193,8 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         }
 
         // 建立回應對象
-        MemberProfileCookie response = new MemberProfileCookie();
-        response.setEmail(email);
+        MemberProfileResponse response = MapperUtils.map(member, MemberProfileResponse.class);
         response.setMemberType("MEMBER");
-        response.setMemberId(member.getMemberId());
-
         return ApiResponseTemplate.success("get member profile successful!",response);
     }
 
@@ -222,16 +219,40 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     }
 
     @Override
-    public ApiResponseTemplate<?> memberResetPwd(String token, String password) {
+    public ApiResponseTemplate<?> memberResetPwd(@RequestBody MemberResetPwdRequest req) {
+
+        String token = req.getToken();
+
+        String newPassword = req.getPassword();
+
+        //  檢查密碼格式
+        if (!isValidPassword(newPassword)) {
+            return ApiResponseTemplate.fail(400, "INVALID_PASSWORD", "密碼必須包含大寫字母、小寫字母、數字，且長度至少 8 位");
+        }
+
         //  解析 Token 取得 Email
-        String email = jwtUtil.extractEmail(token);
+        String email ;
+        try {
+            email = jwtUtil.extractUsername(token);
+        } catch (Exception e) {
+            return ApiResponseTemplate.fail(400, "TOKEN_INVALID", "無效的 Token");
+        }
+        // **檢查 Token 是否過期**
+        if (jwtUtil.isTokenExpired(token)) {
+            return ApiResponseTemplate.fail(400, "TOKEN_EXPIRED", "Token 已過期，請重新請求重設密碼");
+        }
 
         //  查找會員
         MemberMainEntity member = memberMainRepository.findByEmail(email)
                 .orElseThrow(() -> new ServiceException("無效的驗證連結"));
+        if (member == null) {
+            return ApiResponseTemplate.fail(404, "USER_NOT_FOUND", "找不到此使用者");
+        }
+
+        String encryptedPassword = passwordEncoder.encode(newPassword);
 
         //  更新密碼（加密後存入）
-        member.setPassword(passwordEncoder.encode(password));
+        member.setPassword(passwordEncoder.encode(encryptedPassword));
         memberMainRepository.save(member);
 
         //  回應成功消息

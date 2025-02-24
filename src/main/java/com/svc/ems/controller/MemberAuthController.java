@@ -1,9 +1,6 @@
 package com.svc.ems.controller;
 
-import com.svc.ems.dto.auth.MemberProfileCookie;
-import com.svc.ems.dto.auth.MemberRegisterRequest;
-import com.svc.ems.dto.auth.UserRegisterRequest;
-import com.svc.ems.dto.auth.VerifyRequest;
+import com.svc.ems.dto.auth.*;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.svc.auth.MemberAuthService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -38,8 +35,24 @@ public class MemberAuthController {
         return memberAuthService.verifyEmail(token, response);
     }
 
+    @PostMapping("/forgotPwd")
+    public ApiResponseTemplate<?> memberForgotPwd(@RequestBody String email){
+        return memberAuthService.memberForgotPwd(email);
+    }
+
+    @PostMapping("/ResetPwd")
+    public ApiResponseTemplate<?> memberResetPwd(@RequestBody MemberResetPwdRequest req){
+        return memberAuthService.memberResetPwd(req);
+    }
+
+    @PostMapping("/logout")
+    public ApiResponseTemplate<?> memberLogout(){
+        return memberAuthService.memberLogout();
+    }
+
+    //{ withCredentials: true }
     @GetMapping("/profile")
-    public ApiResponseTemplate<MemberProfileCookie> getMemberProfile(@CookieValue(value = "AUTH_TOKEN", required = false) String token){
-        return memberAuthService.getMemberProfile(token);
+    public ApiResponseTemplate<MemberProfileResponse> memberGetProfile(@CookieValue(value = "AUTH_TOKEN", required = false) String token){
+        return memberAuthService.memberGetProfile(token);
     }
 }
