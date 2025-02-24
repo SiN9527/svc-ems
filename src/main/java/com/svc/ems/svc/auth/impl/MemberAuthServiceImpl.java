@@ -3,10 +3,7 @@ package com.svc.ems.svc.auth.impl;
 import com.svc.ems.config.jwt.JwtMemberDetailsService;
 import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
-import com.svc.ems.dto.auth.MemberProfileCookie;
-import com.svc.ems.dto.auth.MemberRegisterRequest;
-import com.svc.ems.dto.auth.UserLoginRequest;
-import com.svc.ems.dto.auth.VerifyRequest;
+import com.svc.ems.dto.auth.*;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.MemberMainEntity;
 import com.svc.ems.entity.MemberMainRoleEntity;
@@ -29,12 +26,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -259,8 +258,17 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     }
 
     @Override
-    public ApiResponseTemplate<?> memberUpdatePwd() {
-        return null;
+    public ApiResponseTemplate<?> memberUpdatePwd(@CookieValue(value = "AUTH_TOKEN", required = false) MemberPwdUpdateRequest req) {
+
+
+        Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(req.getToken(), memberMainRepository);
+        if (member.isEmpty()) {
+            return ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND", "找不到此使用者");
+        }
+        String newPassword = (passwordEncoder.encode(req.getNewPassword()));
+        member.get().setPassword(newPassword);
+        memberMainRepository.save(member.get());
+        return ApiResponseTemplate.success("");
     }
 
 

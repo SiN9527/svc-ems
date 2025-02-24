@@ -6,11 +6,13 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Component // Spring Bean，方便依賴注入
@@ -123,6 +125,33 @@ public class JwtUtil {
                 .getBody()
                 .getSubject();
     }
+
+    // **驗證 JWT 並從 Repository 取得對應的使用者**
+    public <T> Optional<T> validateAndGetEntity(String token, JpaRepository<T, String> repository) {
+        // 1️⃣ 解析 Token 取得 Email
+        String email;
+        try {
+            email = extractUsername(token); // **從 Token 取得 Email**
+        } catch (Exception e) {
+            throw new RuntimeException("TOKEN_INVALID: 驗證失敗，無效的 Token");
+        }
+
+        // 2️⃣ 檢查 Token 是否過期
+        if (isTokenExpired(token)) {
+            throw new RuntimeException("TOKEN_EXPIRED: 驗證失敗，Token 已過期");
+        }
+
+        // 3️⃣ 從 Repository 查找對應的使用者
+        return repository.findAll().stream()
+                .filter(user -> {
+                    try {
+                        return (user.getClass().getMethod("getEmail").invoke(user)).equals(email);
+                    } catch (Exception e) {
+                        throw new RuntimeException("User entity does not have getEmail method");
+                    }
+                })
+                .findFirst();
+  }
 }
 
 //public class JwtUtil {

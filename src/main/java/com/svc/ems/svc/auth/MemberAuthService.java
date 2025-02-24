@@ -1,12 +1,10 @@
 package com.svc.ems.svc.auth;
 
-import com.svc.ems.dto.auth.MemberProfileCookie;
-import com.svc.ems.dto.auth.MemberRegisterRequest;
-import com.svc.ems.dto.auth.UserLoginRequest;
-import com.svc.ems.dto.auth.VerifyRequest;
+import com.svc.ems.dto.auth.*;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 
 import java.util.Map;
 
@@ -39,7 +37,7 @@ public interface MemberAuthService {
     public ApiResponseTemplate<?> memberUpdateProfile();
 
     // 更新密碼
-    public ApiResponseTemplate<?> memberUpdatePwd();
+    public ApiResponseTemplate<?> memberUpdatePwd(@CookieValue(value = "AUTH_TOKEN", required = false) MemberPwdUpdateRequest req);
 
     public ApiResponseTemplate<?> memberForgotPwd(String email);
 

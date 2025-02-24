@@ -1,9 +1,6 @@
 package com.svc.ems.controller;
 
-import com.svc.ems.dto.auth.MemberProfileCookie;
-import com.svc.ems.dto.auth.MemberRegisterRequest;
-import com.svc.ems.dto.auth.UserRegisterRequest;
-import com.svc.ems.dto.auth.VerifyRequest;
+import com.svc.ems.dto.auth.*;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.svc.auth.MemberAuthService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -42,4 +39,11 @@ public class MemberAuthController {
     public ApiResponseTemplate<MemberProfileCookie> getMemberProfile(@CookieValue(value = "AUTH_TOKEN", required = false) String token){
         return memberAuthService.getMemberProfile(token);
     }
+
+    @PostMapping("/updatePwd")
+
+    public ApiResponseTemplate<?> memberUpdatePwd(@CookieValue(value = "AUTH_TOKEN", required = false)MemberPwdUpdateRequest req){
+        return memberAuthService.memberUpdatePwd(req);
+    }
+
 }
