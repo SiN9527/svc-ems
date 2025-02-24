@@ -17,6 +17,7 @@ import java.time.Instant;
  */
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
@@ -32,41 +33,49 @@ public class ApiResponseTemplate<E> implements Serializable {
     /**
      * HTTP 狀態碼，例如 200、400、500
      */
+    @JsonProperty("HttpStatusCode")
     private Integer httpStatusCode;
 
     /**
      * 錯誤類型（可選，例如 "USER_NOT_FOUND", "TOKEN_INVALID"）
      */
+    @JsonProperty("Error")
     private String error;
 
     /**
      * 錯誤或成功的詳細訊息
      */
+    @JsonProperty("MessageDetail")
     private String messageDetail;
 
     /**
      * 具體的回應數據
      */
+    @JsonProperty("Payload")
     private E payload;
 
     /**
      * API 請求的時間戳
      */
+    @JsonProperty("Timestamp")
     private Long timestamp;
 
     /**
      * 請求的 URI（方便 Debug）
      */
+    @JsonProperty("Path")
     private String path;
 
     /**
      * 唯一請求識別碼（可搭配 MDC 用來追蹤請求）
      */
+    @JsonProperty("TraceId")
     private String traceId;
 
     /**
      * 除錯訊息（僅在開發環境回傳）
      */
+    @JsonProperty("DebugMessage")
     private String debugMessage;
 
     /**
