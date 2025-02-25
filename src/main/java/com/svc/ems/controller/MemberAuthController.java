@@ -1,10 +1,16 @@
 package com.svc.ems.controller;
 
-import com.svc.ems.dto.auth.*;
+import com.svc.ems.dto.auth.MemberProfileResponse;
+import com.svc.ems.dto.auth.MemberPwdUpdateRequest;
+import com.svc.ems.dto.auth.MemberRegisterRequest;
+import com.svc.ems.dto.auth.MemberResetPwdRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.svc.auth.MemberAuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -23,43 +29,63 @@ public class MemberAuthController {
     }
 
 
-    @PostMapping("/register")
+    //會員註冊
+    @PostMapping("/entrance/register")
     public ResponseEntity<ApiResponseTemplate<String>> memberRegister(@RequestBody MemberRegisterRequest req) {
 
         // 返回 JWT 和其他信息
         return memberAuthService.memberRegister(req);
     }
 
-    @GetMapping("/verify")
-    public ResponseEntity<ApiResponseTemplate<String>> verifyEmail(@RequestParam("token") String token, HttpServletResponse response){
+    //會員驗證
+    @GetMapping("/entrance/verify")
+    public ResponseEntity<ApiResponseTemplate<String>> verifyEmail(@RequestBody Map<String, String> token, HttpServletResponse response) {
         return memberAuthService.verifyEmail(token, response);
     }
 
-    @PostMapping("/forgotPwd")
-    public ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(@RequestBody MemberPwdUpdateRequest req){
-        return memberAuthService.memberForgotPwd(req);
+    //會員忘記密碼
+    @PostMapping("/entrance/forgotPwd")
+    public ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(@RequestBody MemberPwdUpdateRequest req, @AuthenticationPrincipal UserDetails userDetails) {
+        return memberAuthService.memberForgotPwd(req, userDetails);
     }
 
-    @PostMapping("/ResetPwd")
-    public ResponseEntity<ApiResponseTemplate<?>> memberResetPwd(@RequestBody MemberResetPwdRequest req){
-        return memberAuthService.memberResetPwd(req);
+    //會員重設密碼
+    @PostMapping("/entrance/ResetPwd")
+    public ResponseEntity<ApiResponseTemplate<?>> memberResetPwd(@RequestBody MemberResetPwdRequest req, @AuthenticationPrincipal UserDetails userDetails) {
+        return memberAuthService.memberResetPwd(req, userDetails);
     }
 
+    //會員登出
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponseTemplate<?>> memberLogout(HttpServletResponse response){
+    public ResponseEntity<ApiResponseTemplate<?>> memberLogout(HttpServletResponse response) {
         return memberAuthService.memberLogout(response);
     }
 
     //{ withCredentials: true }
+
+    //取得個人資料
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile")
-    public ResponseEntity<ApiResponseTemplate<MemberProfileResponse>> memberGetProfile(@CookieValue(value = "AUTH_TOKEN", required = false) String token){
-        return memberAuthService.memberGetProfile(token);
+    public ResponseEntity<ApiResponseTemplate<MemberProfileResponse>> memberGetProfile(@AuthenticationPrincipal UserDetails userDetails) {
+        return memberAuthService.memberGetProfile(userDetails);
     }
 
+    // 修改密碼
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/updatePwd")
 
-    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(@CookieValue(value = "AUTH_TOKEN", required = false)MemberPwdUpdateRequest req){
-        return memberAuthService.memberUpdatePwd(req);
+    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(@RequestBody MemberPwdUpdateRequest req, @AuthenticationPrincipal UserDetails userDetails) {
+        return memberAuthService.memberUpdatePwd(req, userDetails);
     }
+
+    //更新token
+   @PostMapping("/refreshToken")
+    public ResponseEntity<ApiResponseTemplate<?>> memberRefreshToken(@CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken,
+                                                                     HttpServletResponse response) {
+    return memberAuthService.memberRefreshToken(refreshToken, response);
+    }
+
+    ;
 
 }

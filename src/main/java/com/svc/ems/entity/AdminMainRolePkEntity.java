@@ -10,7 +10,7 @@ import java.io.Serializable;
 
 @Data
 @Embeddable
-public class UserMainRolePkEntity implements Serializable {
+public class AdminMainRolePkEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -23,9 +23,9 @@ public class UserMainRolePkEntity implements Serializable {
     @Column(name = "role_id", nullable = false)
     private Long roleId;
 
-    public UserMainRolePkEntity() {}
+    public AdminMainRolePkEntity() {}
 
-    public UserMainRolePkEntity(String userId, Long roleId) {
+    public AdminMainRolePkEntity(String userId, Long roleId) {
         this.userId = userId;
         this.roleId = roleId;
     }

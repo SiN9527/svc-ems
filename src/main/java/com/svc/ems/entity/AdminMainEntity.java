@@ -10,8 +10,8 @@ import java.sql.Timestamp;
 
 @Data
 @Entity
-@Table(name = "USER_MAIN", schema = "db_001")
-public class UserMainEntity {
+@Table(name = "ADMIN_MAIN", schema = "db_001")
+public class AdminMainEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 設定自動生成 ID
     @Column(name = "user_id", nullable = false)

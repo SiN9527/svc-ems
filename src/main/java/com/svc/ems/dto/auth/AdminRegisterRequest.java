@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class UserRegisterRequest {
+public class AdminRegisterRequest {
     @NotBlank
     @JsonProperty("Email")
     private String email;

@@ -7,11 +7,11 @@ import java.sql.Timestamp;
 
 @Data
 @Entity
-@Table(name = "USER_MAIN_ROLE", schema = "db_001")
-public class UserMainRoleEntity {
+@Table(name = "ADMIN_MAIN_ROLE", schema = "db_001")
+public class AdminMainRoleEntity {
 
     @EmbeddedId
-    private UserMainRolePkEntity pk; // 複合主鍵
+    private AdminMainRolePkEntity pk; // 複合主鍵
 
     @Size(max = 50)
     @Column(name = "created_by", length = 50)

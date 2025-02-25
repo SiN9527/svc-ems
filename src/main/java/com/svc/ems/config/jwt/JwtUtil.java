@@ -1,6 +1,7 @@
 package com.svc.ems.config.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -28,9 +29,9 @@ public class JwtUtil {
     }
 
     // **生成 JWT Token**
-    public String generateToken(String username, String type, List<String> roles) {
+    public String generateToken(String email, String type, List<String> roles) {
         return Jwts.builder()
-                .setSubject(username) // 設定 Token 的持有者 (用戶名)
+                .setSubject(email) // 設定 Token 的持有者 (用戶名)
                 .claim("roles", roles) // 儲存使用者角色資訊
                 .claim("type", type) // 記錄該 Token 屬於 `USER` 還是 `MEMBER`
                 .setIssuedAt(new Date()) // 設定發行時間
@@ -152,6 +153,42 @@ public class JwtUtil {
                 })
                 .findFirst();
   }
+
+    public String generateRefreshToken(String email) {
+        long refreshExpirationMillis  = 3600;
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExpirationMillis)) // **設定 Refresh Token 有效期**
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public boolean validateRefreshToken(String refreshToken) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey) // 使用相同密鑰驗證
+                    .build()
+                    .parseClaimsJws(refreshToken)
+                    .getBody();
+
+            // 確保 Token 沒有過期
+            return !claims.getExpiration().before(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            return false; // 無效的 Token
+        }
+    }
+
+    public String generateAccessToken(String email, String type, List<String> roles) {
+        return Jwts.builder()
+                .setSubject(email) // 設定 Token 的持有者 (用戶名)
+                .claim("roles", roles) // 儲存使用者角色資訊
+                .claim("type", type) // 記錄該 Token 屬於 `USER` 還是 `MEMBER`
+                .setIssuedAt(new Date()) // 設定簽發時間
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMillis)) // 設定過期時間
+                .signWith(secretKey, SignatureAlgorithm.HS256) // 使用 HS256 簽名
+                .compact();
+    }
 }
 
 //public class JwtUtil {

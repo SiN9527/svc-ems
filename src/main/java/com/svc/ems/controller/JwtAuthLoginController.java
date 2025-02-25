@@ -1,7 +1,7 @@
 package com.svc.ems.controller;
 
+import com.svc.ems.dto.auth.AdminLoginResponse;
 import com.svc.ems.dto.auth.LoginRequest;
-import com.svc.ems.dto.auth.UserLoginResponse;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.svc.auth.JwtAuthLoginService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,7 +26,7 @@ public class JwtAuthLoginController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponseTemplate<UserLoginResponse>> authLogin(@RequestBody LoginRequest req, HttpServletResponse response) {
+    public ResponseEntity<ApiResponseTemplate<AdminLoginResponse>> authLogin(@RequestBody LoginRequest req, HttpServletResponse response) {
 
         // 返回 JWT 和其他信息
         return jwtAuthLoginService.authLogin(req,response);

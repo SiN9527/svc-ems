@@ -1,9 +1,7 @@
 package com.svc.ems.controller.base;
 
 import com.svc.ems.dto.auth.SwaggerUserLoginRequest;
-import com.svc.ems.dto.auth.UserRegisterRequest;
 import com.svc.ems.svc.base.BaseService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

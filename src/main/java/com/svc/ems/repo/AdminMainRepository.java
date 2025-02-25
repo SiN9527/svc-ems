@@ -1,18 +1,18 @@
 package com.svc.ems.repo;
 
-import com.svc.ems.entity.UserMainEntity;
+import com.svc.ems.entity.AdminMainEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 @Repository
-public interface UserMainRepository extends JpaRepository<UserMainEntity, Long> {
+public interface AdminMainRepository extends JpaRepository<AdminMainEntity, Long> {
 
-    Optional<UserMainEntity> findByUserName(String username);
+    Optional<AdminMainEntity> findByUserName(String username);
 
-    Optional<UserMainEntity> findByEmail(String email);
+    Optional<AdminMainEntity> findByEmail(String email);
 
-    Optional<UserMainEntity> findByUserNameOrEmail(String username, String email);
+    Optional<AdminMainEntity> findByUserNameOrEmail(String username, String email);
 
     Boolean existsByUserName(String username);
 

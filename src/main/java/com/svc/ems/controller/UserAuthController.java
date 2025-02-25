@@ -1,6 +1,6 @@
 package com.svc.ems.controller;
 
-import com.svc.ems.dto.auth.UserRegisterRequest;
+import com.svc.ems.dto.auth.AdminRegisterRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.svc.auth.UserAuthService;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ public class UserAuthController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponseTemplate<?>> register(@RequestBody UserRegisterRequest req) {
+    public ResponseEntity<ApiResponseTemplate<?>> register(@RequestBody AdminRegisterRequest req) {
         // 返回 JWT 和其他信息
         return userAuthService.userRegister(req);
     }

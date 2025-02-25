@@ -3,13 +3,13 @@ package com.svc.ems.svc.auth.impl;
 import com.svc.ems.config.jwt.JwtMemberDetailsService;
 import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
+import com.svc.ems.dto.auth.AdminLoginResponse;
 import com.svc.ems.dto.auth.LoginRequest;
-import com.svc.ems.dto.auth.UserLoginResponse;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.MemberMainEntity;
-import com.svc.ems.entity.UserMainEntity;
+import com.svc.ems.entity.AdminMainEntity;
 import com.svc.ems.repo.MemberMainRepository;
-import com.svc.ems.repo.UserMainRepository;
+import com.svc.ems.repo.AdminMainRepository;
 import com.svc.ems.svc.auth.JwtAuthLoginService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,24 +33,24 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
     private final JwtUserDetailsService userDetailsService;
     private final JwtMemberDetailsService memberDetailsService;
     private final PasswordEncoder passwordEncoder;
-    private final UserMainRepository userMainRepository;
+    private final AdminMainRepository adminMainRepository;
     private final MemberMainRepository memberRepository;
 
     public JwtAuthLoginServiceImpl(JwtUtil jwtUtil,
                                    JwtUserDetailsService userDetailsService,
                                    JwtMemberDetailsService memberDetailsService,
                                    PasswordEncoder passwordEncoder,
-                                   UserMainRepository userMainRepository, MemberMainRepository memberRepository) {
+                                   AdminMainRepository userMainRepository, MemberMainRepository memberRepository) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.memberDetailsService = memberDetailsService;
         this.passwordEncoder = passwordEncoder;
-        this.userMainRepository = userMainRepository;
+        this.adminMainRepository = userMainRepository;
         this.memberRepository = memberRepository;
     }
 
     @Override
-    public  ResponseEntity<ApiResponseTemplate<UserLoginResponse>> authLogin(LoginRequest loginRequest, HttpServletResponse response) {
+    public  ResponseEntity<ApiResponseTemplate<AdminLoginResponse>> authLogin(LoginRequest loginRequest, HttpServletResponse response) {
 
         String email = loginRequest.getEmail();
         String password = loginRequest.getPassword();
@@ -68,7 +68,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         String storedEncryptedPassword;
         try {
             if (isUser) {
-                UserMainEntity user = userMainRepository.findByEmail(email).orElseThrow();
+                AdminMainEntity user = adminMainRepository.findByEmail(email).orElseThrow();
                 userDetails = userDetailsService.loadUserByUsername(email);
                 type = "USER";
                 storedEncryptedPassword = user.getPassword(); // **取出加密後的密碼**
@@ -109,7 +109,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
 
         String token = jwtUtil.generateToken(email, type, roles);
         log.info("email: {}", token);
-        logger.info("UserLoginResponse: {}", new UserLoginResponse(token, roles));
+        logger.info("AdminLoginResponse: {}", new AdminLoginResponse(token, roles));
         // 返回 JWT 和其他信息
         // 使用 ApiResponse.success() 包裝成功訊息與資料，再回傳 ResponseEntity
 
@@ -121,7 +121,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         response.addCookie(cookie);
 
         // 6️⃣ 回應成功消息
-        return ResponseEntity.ok(ApiResponseTemplate.success("member login success",  new UserLoginResponse(token, roles)));
+        return ResponseEntity.ok(ApiResponseTemplate.success("member login success",  new AdminLoginResponse(token, roles)));
 
     }
 

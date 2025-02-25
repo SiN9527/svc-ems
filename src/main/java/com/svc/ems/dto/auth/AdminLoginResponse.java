@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserLoginResponse {
+public class AdminLoginResponse {
 
     @JsonProperty("Token")
     private String token; // JWT Token
@@ -27,7 +27,7 @@ public class UserLoginResponse {
     @JsonProperty("MemberId")
     private String memberId; // 會員 ID (可選)
 
-    public UserLoginResponse(String token, List<String> roles) {
+    public AdminLoginResponse(String token, List<String> roles) {
         this.token = token;
         this.roles = roles;
     }

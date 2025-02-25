@@ -4,7 +4,7 @@ import com.svc.ems.config.jwt.JwtMemberDetailsService;
 import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
 import com.svc.ems.dto.auth.SwaggerUserLoginRequest;
-import com.svc.ems.repo.UserMainRepository;
+import com.svc.ems.repo.AdminMainRepository;
 import com.svc.ems.svc.base.BaseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,13 +22,13 @@ public class BaseServiceImpl implements BaseService {
     private final JwtUserDetailsService userDetailsService;
     private final JwtMemberDetailsService memberDetailsService;
     private final PasswordEncoder passwordEncoder;
-    private final UserMainRepository userRepository;
+    private final AdminMainRepository userRepository;
 
     public BaseServiceImpl(JwtUtil jwtUtil,
                            JwtUserDetailsService userDetailsService,
                            JwtMemberDetailsService memberDetailsService,
                            PasswordEncoder passwordEncoder,
-                           UserMainRepository userRepository) {
+                           AdminMainRepository userRepository) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.memberDetailsService = memberDetailsService;

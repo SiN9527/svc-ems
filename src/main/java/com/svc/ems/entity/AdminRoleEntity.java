@@ -10,8 +10,8 @@ import java.sql.Timestamp;
 
 @Data
 @Entity
-@Table(name = "USER_ROLE", schema = "db_001")
-public class UserRoleEntity {
+@Table(name = "ADMIN_ROLE", schema = "db_001")
+public class AdminRoleEntity {
     @Id
     @Column(name = "id", nullable = false)
     private Integer id;
