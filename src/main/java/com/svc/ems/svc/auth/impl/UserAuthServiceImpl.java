@@ -49,14 +49,13 @@ public class UserAuthServiceImpl implements UserAuthService {
      * @return 統一格式的 ApiResponse 物件，payload 為成功訊息
      */
 
-    public ApiResponseTemplate<?> userRegister(@RequestBody UserRegisterRequest req) {
+    public ResponseEntity<ApiResponseTemplate<?>> userRegister(@RequestBody UserRegisterRequest req) {
 
 
         if (userMainRepository.existsByEmail(req.getEmail())) {
             log.info("User registration failed: Email already exists. Please use another email address.");
             // 使用 ApiResponse.fail() 包裝失敗訊息，再回傳 ResponseEntity
-            return ApiResponseTemplate.fail(HttpStatus.BAD_REQUEST.value(), "Registration failed",
-                    "Email already exists. Please use another email address."
+           return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400,"Email already exists. Please use another email address.")
             );
 
         }
@@ -71,7 +70,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         userMainRepository.save(user);
         logger.info("User registered successfully: {}", user.getEmail());
         // 使用 ApiResponse.success() 包裝成功訊息，再回傳 ResponseEntity
-        return ApiResponseTemplate.success("User registered successfully.");
+        return ResponseEntity.ok(ApiResponseTemplate.success("User registered successfully."));
     }
 
 

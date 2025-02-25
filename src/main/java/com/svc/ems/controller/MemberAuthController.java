@@ -24,41 +24,41 @@ public class MemberAuthController {
 
 
     @PostMapping("/register")
-    public ApiResponseTemplate<String> memberRegister(@RequestBody MemberRegisterRequest req) {
+    public ResponseEntity<ApiResponseTemplate<String>> memberRegister(@RequestBody MemberRegisterRequest req) {
 
         // 返回 JWT 和其他信息
         return memberAuthService.memberRegister(req);
     }
 
     @GetMapping("/verify")
-    public ApiResponseTemplate<String> verifyEmail(@RequestParam("token") String token, HttpServletResponse response){
+    public ResponseEntity<ApiResponseTemplate<String>> verifyEmail(@RequestParam("token") String token, HttpServletResponse response){
         return memberAuthService.verifyEmail(token, response);
     }
 
     @PostMapping("/forgotPwd")
-    public ApiResponseTemplate<?> memberForgotPwd(@RequestBody String email){
-        return memberAuthService.memberForgotPwd(email);
+    public ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(@RequestBody MemberPwdUpdateRequest req){
+        return memberAuthService.memberForgotPwd(req);
     }
 
     @PostMapping("/ResetPwd")
-    public ApiResponseTemplate<?> memberResetPwd(@RequestBody MemberResetPwdRequest req){
+    public ResponseEntity<ApiResponseTemplate<?>> memberResetPwd(@RequestBody MemberResetPwdRequest req){
         return memberAuthService.memberResetPwd(req);
     }
 
     @PostMapping("/logout")
-    public ApiResponseTemplate<?> memberLogout(){
-        return memberAuthService.memberLogout();
+    public ResponseEntity<ApiResponseTemplate<?>> memberLogout(HttpServletResponse response){
+        return memberAuthService.memberLogout(response);
     }
 
     //{ withCredentials: true }
     @GetMapping("/profile")
-    public ApiResponseTemplate<MemberProfileResponse> memberGetProfile(@CookieValue(value = "AUTH_TOKEN", required = false) String token){
+    public ResponseEntity<ApiResponseTemplate<MemberProfileResponse>> memberGetProfile(@CookieValue(value = "AUTH_TOKEN", required = false) String token){
         return memberAuthService.memberGetProfile(token);
     }
 
     @PostMapping("/updatePwd")
 
-    public ApiResponseTemplate<?> memberUpdatePwd(@CookieValue(value = "AUTH_TOKEN", required = false)MemberPwdUpdateRequest req){
+    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(@CookieValue(value = "AUTH_TOKEN", required = false)MemberPwdUpdateRequest req){
         return memberAuthService.memberUpdatePwd(req);
     }
 

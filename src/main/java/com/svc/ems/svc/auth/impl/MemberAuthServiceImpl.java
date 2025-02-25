@@ -8,7 +8,6 @@ import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.MemberMainEntity;
 import com.svc.ems.entity.MemberMainRoleEntity;
 import com.svc.ems.entity.MemberMainRolePkEntity;
-import com.svc.ems.entity.UserMainEntity;
 import com.svc.ems.exception.ServiceException;
 import com.svc.ems.repo.MemberMainRepository;
 import com.svc.ems.repo.MemberMainRoleRepository;
@@ -32,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -78,21 +76,24 @@ public class MemberAuthServiceImpl implements MemberAuthService {
      * @return 統一格式的 ApiResponse 物件，payload 為成功訊息
      */
     @PostMapping("/register")
-    public ApiResponseTemplate<String> memberRegister(@RequestBody MemberRegisterRequest req) {
+    public  ResponseEntity<ApiResponseTemplate<String>> memberRegister(@RequestBody MemberRegisterRequest req) {
 
 
         // 驗證 email 是否已存在
         if (memberMainRepository.existsByEmail(req.getEmail())) {
             // 使用 ApiResponse.fail() 包裝失敗訊息，再回傳 ResponseEntity
-            return ApiResponseTemplate.fail(HttpStatus.BAD_REQUEST.value(), "Registration failed",
+            return   ResponseEntity.badRequest().body(ApiResponseTemplate.fail(HttpStatus.BAD_REQUEST.value(),
                     "Email already exists. Please use another email address."
-            );
+            ));
         }
 
         // 密碼格式驗證
         if (!isValidPassword(req.getPassword())) {
-            return ApiResponseTemplate.fail(HttpStatus.BAD_REQUEST.value(), "Registration failed",
-                    "Password must contain upper/lower case letters, numbers, and special characters.");
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(HttpStatus.BAD_REQUEST.value(),
+                    "Password must contain upper/lower case letters, numbers, and special characters."
+            ));
+
+
         }
 
         Timestamp timeNow = new Timestamp(System.currentTimeMillis());
@@ -118,109 +119,89 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
         emailService.sendVerificationEmail(entity.getEmail());
         // 使用 ApiResponse.success() 包裝成功訊息，再回傳 ResponseEntity
-        return ApiResponseTemplate.success("會員註冊成功！請查收您的 Email 完成驗證.");
+        return ResponseEntity.ok(ApiResponseTemplate.success("User registered successfully ! Please check your email to verify your account."));
     }
 
     @Override
-    public ApiResponseTemplate<String> verifyEmail(String token, HttpServletResponse response) {
+    public  ResponseEntity<ApiResponseTemplate<String>> verifyEmail(String token, HttpServletResponse response) {
 
 
         // **解析 Token**
-        String email;
-        try {
-            email = jwtUtil.extractUsername(token); // **從 Token 取得 Email**
-        } catch (Exception e) {
-            return ApiResponseTemplate.fail(400, "TOKEN_INVALID", "驗證失敗，無效的 Token");
-        }
-
-        // **檢查 Token 是否過期**
-        if (jwtUtil.isTokenExpired(token)) {
-            return ApiResponseTemplate.fail(400, "TOKEN_EXPIRED", "驗證失敗，Token 已過期");
+        String email = jwtUtil.extractUsername(token);
+        if (email == null || jwtUtil.isTokenExpired(token)) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "INVALID_OR_EXPIRED_TOKEN"));
         }
 
         // **更新資料庫，標記使用者已驗證**
         MemberMainEntity member = memberMainRepository.findByEmail(email)
                 .orElse(null);
         if (member == null) {
-            return ApiResponseTemplate.fail(404, "USER_NOT_FOUND", "找不到此使用者");
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND"));
         }
 
         member.setEnabled(true);
         memberMainRepository.save(member);
-        // **自動登入：發送 JWT Token**
-        // 生成 JWT
 
-        UserDetails userDetails = memberDetailsService.loadUserByUsername(email);
-        String type = "MEMBER";
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(auth -> auth.getAuthority().replace("ROLE_", ""))
-                .toList();
-        String jwtToken = jwtUtil.generateToken(email, "type", roles);
 
-        Cookie cookie = new Cookie("AUTH_TOKEN", jwtToken);
-        cookie.setHttpOnly(true);  // 無法透過 JavaScript 存取
-        cookie.setSecure(true);    // 只允許 HTTPS
-        cookie.setPath("/");       // 全域有效
-        cookie.setMaxAge(24 * 60 * 60);  // 1 天
-        response.addCookie(cookie);
+        // **生成 JWT 並存入 HttpOnly Cookie**
+        generateAuthToken(email, response);
 
-        return ApiResponseTemplate.success("Validation Success , Auto Login", jwtToken);
+        return ResponseEntity.ok(ApiResponseTemplate.success("Email verified successfully! You are now logged in."));
     }
 
+
+    // **取得會員資料**
     @Override
-    public ApiResponseTemplate<MemberProfileResponse> memberGetProfile(@CookieValue(value = "AUTH_TOKEN", required = false) String token) {
+    public  ResponseEntity<ApiResponseTemplate<MemberProfileResponse>> memberGetProfile(@CookieValue(value = "AUTH_TOKEN", required = false) String token) {
         if (token == null) {
-            return ApiResponseTemplate.fail(401, "UNAUTHORIZED", "未登入，請重新登入");
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(401, "TOKEN_MISSING"));
         }
 
-        // 解析 Token 取得 Email
-        String email;
-        try {
-            email = jwtUtil.extractUsername(token);
-        } catch (Exception e) {
-            return ApiResponseTemplate.fail(400, "TOKEN_INVALID", "驗證失敗，無效的 Token");
+        // **解析 Token**
+        String email = jwtUtil.extractUsername(token);
+        if (email == null || jwtUtil.isTokenExpired(token)) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "INVALID_OR_EXPIRED_TOKEN"));
         }
 
-        // 檢查 Token 是否過期
-        if (jwtUtil.isTokenExpired(token)) {
-            return ApiResponseTemplate.fail(400, "TOKEN_EXPIRED", "驗證失敗，Token 已過期，請重新登入");
-        }
 
         // 從資料庫查詢用戶資訊
         MemberMainEntity member = memberMainRepository.findByEmail(email).orElse(null);
 
         if (member == null) {
-            return ApiResponseTemplate.fail(404, "USER_NOT_FOUND", "找不到此使用者");
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND"));
         }
 
         // 建立回應對象
         MemberProfileResponse response = MapperUtils.map(member, MemberProfileResponse.class);
         response.setMemberType("MEMBER");
-        return ApiResponseTemplate.success("get member profile successful!",response);
+       return ResponseEntity.ok(ApiResponseTemplate.success("Member profile retrieved successfully.", response));
     }
 
     @Override
-    public ApiResponseTemplate<?> memberFindPwd(UserLoginRequest req) {
+    public  ResponseEntity<ApiResponseTemplate<?>> memberFindPwd(UserLoginRequest req) {
         return null;
     }
 
 
+    // **忘記密碼 API**
     @Override
-    public ApiResponseTemplate<?> memberForgotPwd(String email) {
+    public  ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(MemberPwdUpdateRequest req) {
+
+        String email = req.getEmail();
         //  檢查會員是否存在
         if (!memberMainRepository.existsByEmail(email)) {
-            return ApiResponseTemplate.fail(404, "EMAIL_NOT_FOUND", "該 Email 並未註冊");
+          return  ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND"));
         }
 
         //  發送密碼重設 Email
         emailService.sendPasswordResetEmail(email);
 
         //  回應成功消息
-        return ApiResponseTemplate.success("密碼重設信件已發送，請檢查您的 Email");
+        return ResponseEntity.ok(ApiResponseTemplate.success("reset password email sent successfully"));
     }
 
     @Override
-    public ApiResponseTemplate<?> memberResetPwd(@RequestBody MemberResetPwdRequest req) {
+    public  ResponseEntity<ApiResponseTemplate<?>> memberResetPwd(@RequestBody MemberResetPwdRequest req) {
 
         String token = req.getToken();
 
@@ -228,26 +209,22 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
         //  檢查密碼格式
         if (!isValidPassword(newPassword)) {
-            return ApiResponseTemplate.fail(400, "INVALID_PASSWORD", "密碼必須包含大寫字母、小寫字母、數字，且長度至少 8 位");
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "INVALID_PASSWORD"));
         }
 
-        //  解析 Token 取得 Email
-        String email ;
-        try {
-            email = jwtUtil.extractUsername(token);
-        } catch (Exception e) {
-            return ApiResponseTemplate.fail(400, "TOKEN_INVALID", "無效的 Token");
+
+        // **解析 Token**
+        String email = jwtUtil.extractUsername(token);
+        if (email == null || jwtUtil.isTokenExpired(token)) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "INVALID_OR_EXPIRED_TOKEN"));
         }
-        // **檢查 Token 是否過期**
-        if (jwtUtil.isTokenExpired(token)) {
-            return ApiResponseTemplate.fail(400, "TOKEN_EXPIRED", "Token 已過期，請重新請求重設密碼");
-        }
+
 
         //  查找會員
         MemberMainEntity member = memberMainRepository.findByEmail(email)
                 .orElseThrow(() -> new ServiceException("無效的驗證連結"));
         if (member == null) {
-            return ApiResponseTemplate.fail(404, "USER_NOT_FOUND", "找不到此使用者");
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND"));
         }
 
         String encryptedPassword = passwordEncoder.encode(newPassword);
@@ -257,41 +234,35 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         memberMainRepository.save(member);
 
         //  回應成功消息
-        return ApiResponseTemplate.success("密碼重設成功，請使用新密碼登入！");
+        return ResponseEntity.ok(ApiResponseTemplate.success("Password reset successfully"));
     }
 
+    /**
+     * 會員登出 API
+     */
     @Override
-    public ApiResponseTemplate<?> memberLogout() {
-        return null;
-    }
+    public ResponseEntity<ApiResponseTemplate<?>> memberLogout(HttpServletResponse response) {
+        Cookie authCookie = new Cookie("AUTH_TOKEN", null);
+        authCookie.setHttpOnly(true);
+        authCookie.setSecure(true);
+        authCookie.setPath("/");
+        authCookie.setMaxAge(0); // 立即失效
+        response.addCookie(authCookie);
 
-    @Override
-    public ApiResponseTemplate<?> memberRefreshToken() {
-        return null;
+        return ResponseEntity.ok(ApiResponseTemplate.success("登出成功"));
     }
-
     @Override
-    public ApiResponseTemplate<?> memberGetProfile() {
-        return null;
-    }
-
-    @Override
-    public ApiResponseTemplate<?> memberUpdateProfile() {
-        return null;
-    }
-
-    @Override
-    public ApiResponseTemplate<?> memberUpdatePwd(@CookieValue(value = "AUTH_TOKEN", required = false) MemberPwdUpdateRequest req) {
+    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(@CookieValue(value = "AUTH_TOKEN", required = false) MemberPwdUpdateRequest req) {
 
 
         Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(req.getToken(), memberMainRepository);
         if (member.isEmpty()) {
-            return ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND", "找不到此使用者");
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "MEMBER_NOT_FOUND"));
         }
         String newPassword = (passwordEncoder.encode(req.getNewPassword()));
         member.get().setPassword(newPassword);
         memberMainRepository.save(member.get());
-        return ApiResponseTemplate.success("");
+        return ResponseEntity.ok(ApiResponseTemplate.success("Password updated successfully"));
     }
 
 
@@ -301,8 +272,59 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$");
     }
 
+    /**
+     * 產生 JWT 並存入 HttpOnly Cookie
+     */
+    private String generateAuthToken(String email, HttpServletResponse response) {
+
+        // 生成 JWT
+        UserDetails userDetails = memberDetailsService.loadUserByUsername(email);
+
+        String type = "MEMBER";
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(auth -> auth.getAuthority().replace("ROLE_", ""))
+                .toList();
+        String jwtToken = jwtUtil.generateToken(email, type, roles);
+
+        Cookie cookie = new Cookie("AUTH_TOKEN", jwtToken);
+        cookie.setHttpOnly(true); // 無法透過 JavaScript 存取
+        cookie.setSecure(true); // 只允許 HTTPS
+        cookie.setPath("/"); // 全域有效
+        cookie.setMaxAge(3600); // 1 小時過期
+        response.addCookie(cookie); // 加入 Cookie
+        return jwtToken;
+    }
+
+    private ResponseEntity<ApiResponseTemplate<String>> tokenValidation(String token) {
+
+        String email = jwtUtil.extractUsername(token);
+
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "INVALID_TOKEN"));
+        }
+
+        // **檢查 Token 是否過期**
+        if (jwtUtil.isTokenExpired(token)) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "TOKEN_EXPIRED"));
+        }
+
+        return null;
+    }
+
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> memberRefreshToken() {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> memberUpdateProfile() {
+        return null;
+    }
 
 }
+
+
 
 // // **使用 Spring Security 的 `authenticate()` 驗證身份**  不手動loadUser
 //    Authentication authentication = authenticationManager.authenticate(

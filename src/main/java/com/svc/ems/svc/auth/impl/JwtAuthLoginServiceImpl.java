@@ -11,6 +11,8 @@ import com.svc.ems.entity.UserMainEntity;
 import com.svc.ems.repo.MemberMainRepository;
 import com.svc.ems.repo.UserMainRepository;
 import com.svc.ems.svc.auth.JwtAuthLoginService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +50,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
     }
 
     @Override
-    public ApiResponseTemplate<UserLoginResponse> authLogin(LoginRequest loginRequest) {
+    public  ResponseEntity<ApiResponseTemplate<UserLoginResponse>> authLogin(LoginRequest loginRequest, HttpServletResponse response) {
 
         String email = loginRequest.getEmail();
         String password = loginRequest.getPassword();
@@ -59,7 +61,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         boolean isMember = memberDetailsService.memberExists(email);
 
         if (!isUser && !isMember) {
-            return ApiResponseTemplate.fail(400, "login error.", "Invalid email or password.");
+            return ResponseEntity.ok(ApiResponseTemplate.fail(400,  "Invalid email or password."));
         }
         UserDetails userDetails;
         String type;
@@ -79,23 +81,23 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
 
             // **比對密碼解密**
             if (!passwordEncoder.matches(password, storedEncryptedPassword)) {
-                ResponseEntity.ok(ApiResponseTemplate.fail(400, "Invalid password.", "Invalid email or password."));};
+                ResponseEntity.ok(ApiResponseTemplate.fail(400,"Invalid email or password."));};
             // 取得登入 IP 與 User-Agent
 
         } catch (Exception e) {
             if (e.getMessage().equals("Not found with email")) {
-                return ApiResponseTemplate.fail(400, "login error.", " Email not found.");
+              return ResponseEntity.ok(ApiResponseTemplate.fail(400,  "Invalid email or password."));
             } else if (e.getMessage().equals("Account is disabled")) {
-                return ApiResponseTemplate.fail(400, "login error.", "Account is disabled.");
+                return ResponseEntity.ok(ApiResponseTemplate.fail(400, "Account is disabled."));
             } else {
-                return ApiResponseTemplate.fail(400, "runtime error.", "Please connect IT.");
+                return ResponseEntity.ok(ApiResponseTemplate.fail(400, "Something going wrong."));
             }
         }
 
 
         // 驗證密碼
         if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-            return ApiResponseTemplate.fail(400, "login error.", "Invalid email or password.");
+            return ResponseEntity.ok(ApiResponseTemplate.fail(400, "Invalid email or password."));
 
         }
 
@@ -111,14 +113,15 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         // 返回 JWT 和其他信息
         // 使用 ApiResponse.success() 包裝成功訊息與資料，再回傳 ResponseEntity
 
-        // 4️⃣ 生成 Email 驗證 Token
-        String verificationToken = jwtUtil.generateVerificationToken(email);
-
-        // 5️⃣ 發送驗證郵件
-        //emailService.sendVerificationEmail(req.getEmail(), verificationToken);
+        Cookie cookie = new Cookie("AUTH_TOKEN", token);
+        cookie.setHttpOnly(true);  // 無法透過 JavaScript 存取
+        cookie.setSecure(true);    // 只允許 HTTPS
+        cookie.setPath("/");       // 全域有效
+        cookie.setMaxAge(60 * 60);  // 1 小時過期
+        response.addCookie(cookie);
 
         // 6️⃣ 回應成功消息
-        return ApiResponseTemplate.success("會員登入成功 ",new UserLoginResponse(token, roles));
+        return ResponseEntity.ok(ApiResponseTemplate.success("member login success",  new UserLoginResponse(token, roles)));
 
     }
 

@@ -9,5 +9,5 @@ public interface UserAuthService {
 
 
 
-    public ApiResponseTemplate<?> userRegister(UserRegisterRequest req);
+    public ResponseEntity<ApiResponseTemplate<?>> userRegister(UserRegisterRequest req);
 }

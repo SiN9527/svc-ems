@@ -9,6 +9,7 @@ package com.svc.ems.dto.base;
  * @Version 1.0
  */
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -28,7 +29,14 @@ import lombok.Data;
 @Data
 public class ApiResponseTemplate<E> implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
+
+    /**
+     * 是否成功
+     */
+    @JsonProperty("success")
+    private boolean success;
 
     /**
      * HTTP 狀態碼，例如 200、400、500
@@ -37,46 +45,28 @@ public class ApiResponseTemplate<E> implements Serializable {
     private Integer httpStatusCode;
 
     /**
-     * 錯誤類型（可選，例如 "USER_NOT_FOUND", "TOKEN_INVALID"）
+     * 錯誤或成功的訊息
      */
-    @JsonProperty("Error")
-    private String error;
-
-    /**
-     * 錯誤或成功的詳細訊息
-     */
-    @JsonProperty("MessageDetail")
-    private String messageDetail;
+    @JsonProperty("message")
+    private String message;
 
     /**
      * 具體的回應數據
      */
-    @JsonProperty("Payload")
-    private E payload;
+    @JsonProperty("data")
+    private E data;
 
     /**
      * API 請求的時間戳
      */
-    @JsonProperty("Timestamp")
+    @JsonProperty("timestamp")
     private Long timestamp;
 
     /**
      * 請求的 URI（方便 Debug）
      */
-    @JsonProperty("Path")
+    @JsonProperty("path")
     private String path;
-
-    /**
-     * 唯一請求識別碼（可搭配 MDC 用來追蹤請求）
-     */
-    @JsonProperty("TraceId")
-    private String traceId;
-
-    /**
-     * 除錯訊息（僅在開發環境回傳）
-     */
-    @JsonProperty("DebugMessage")
-    private String debugMessage;
 
     /**
      * 私有建構子，避免直接 new
@@ -85,37 +75,35 @@ public class ApiResponseTemplate<E> implements Serializable {
         this.timestamp = Instant.now().toEpochMilli(); // 設定請求的時間戳
     }
 
-    //  **成功回應**
-    public static <E> ApiResponseTemplate<E> success(E payload) {
+    // **成功回應**
+    public static <E> ApiResponseTemplate<E> success(E data) {
         ApiResponseTemplate<E> response = new ApiResponseTemplate<>();
+        response.success = true;
         response.httpStatusCode = 200;
-        response.messageDetail = "Success";
-        response.payload = payload;
+        response.message = "Success";
+        response.data = data;
         return response;
     }
 
-    public static <E> ApiResponseTemplate<E> success(String message, E payload) {
+    public static <E> ApiResponseTemplate<E> success(String message, E data) {
         ApiResponseTemplate<E> response = new ApiResponseTemplate<>();
+        response.success = true;
         response.httpStatusCode = 200;
-        response.messageDetail = message;
-        response.payload = payload;
+        response.message = message;
+        response.data = data;
         return response;
     }
 
-    //  **失敗回應**
-    public static <E> ApiResponseTemplate<E> fail(int httpStatusCode, String error, String messageDetail) {
+    // **失敗回應**
+    public static <E> ApiResponseTemplate<E> fail(int httpStatusCode, String message) {
         ApiResponseTemplate<E> response = new ApiResponseTemplate<>();
+        response.success = false;
         response.httpStatusCode = httpStatusCode;
-        response.error = error;
-        response.messageDetail = messageDetail;
+        response.message = message;
         return response;
     }
 
-    public static <E> ApiResponseTemplate<E> fail(int httpStatusCode, String messageDetail) {
-        return fail(httpStatusCode, null, messageDetail);
-    }
-
-    //  **支援 Builder 模式**
+    // **支援 Builder 模式**
     public static <E> Builder<E> builder() {
         return new Builder<>();
     }
@@ -127,23 +115,23 @@ public class ApiResponseTemplate<E> implements Serializable {
             this.response = new ApiResponseTemplate<>();
         }
 
+        public Builder<E> success(boolean success) {
+            response.success = success;
+            return this;
+        }
+
         public Builder<E> httpStatusCode(int httpStatusCode) {
             response.httpStatusCode = httpStatusCode;
             return this;
         }
 
-        public Builder<E> error(String error) {
-            response.error = error;
+        public Builder<E> message(String message) {
+            response.message = message;
             return this;
         }
 
-        public Builder<E> messageDetail(String messageDetail) {
-            response.messageDetail = messageDetail;
-            return this;
-        }
-
-        public Builder<E> payload(E payload) {
-            response.payload = payload;
+        public Builder<E> data(E data) {
+            response.data = data;
             return this;
         }
 
@@ -152,19 +140,8 @@ public class ApiResponseTemplate<E> implements Serializable {
             return this;
         }
 
-        public Builder<E> traceId(String traceId) {
-            response.traceId = traceId;
-            return this;
-        }
-
-        public Builder<E> debugMessage(String debugMessage) {
-            response.debugMessage = debugMessage;
-            return this;
-        }
-
         public ApiResponseTemplate<E> build() {
             return response;
         }
     }
 }
-

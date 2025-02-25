@@ -8,7 +8,6 @@ import com.svc.ems.exception.ServiceException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 
 /**
@@ -51,13 +49,13 @@ public class GlobalExceptionHandler {
 
         if (e instanceof AdminDuplicatedException) {
             // **管理員重複錯誤**
-            return buildErrorResponse(HttpStatus.BAD_REQUEST, "ADMIN_DUPLICATED", "管理員已存在");
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, "ADMIN_DUPLICATED");
         } else if (e instanceof AdminNotFoundException) {
             // **找不到管理員錯誤**
-            return buildErrorResponse(HttpStatus.NOT_FOUND, "ADMIN_NOT_FOUND", "找不到該管理員");
+            return buildErrorResponse(HttpStatus.NOT_FOUND, "ADMIN_NOT_FOUND");
         }
         // **未定義的 ServiceException 預設為伺服器錯誤**
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "UNKNOWN_SERVICE_ERROR", "系統發生錯誤，請稍後再試");
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "UNKNOWN_SERVICE_ERROR");
     }
 
     /**
@@ -70,30 +68,26 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ApiResponseTemplate<Void> handleGlobalException(Exception e) {
         log.error("Unexpected Exception: {}", e.getMessage(), e); // **記錄異常日誌**
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "系統發生未知錯誤");
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR");
     }
+
 
     /**
-     * **建構 API 錯誤回應**
-     * - 所有異常統一返回此格式，方便前端處理
+     * **構建統一格式的錯誤回應**
+     * - 將 HTTP 狀態碼、錯誤訊息、請求路徑封裝成統一格式的 API 回應
      *
-     * @param status HTTP 狀態碼（`HttpStatus`）
-     * @param error 錯誤類型識別碼（字串）
-     * @param messageDetail 錯誤訊息（給前端顯示）
-     * @return `ApiResponse<Void>` 統一格式的錯誤回應
+     * @param status  HTTP 狀態碼
+     * @param message 錯誤訊息
+     * @return 統一格式的錯誤回應
      */
-    private ApiResponseTemplate<Void> buildErrorResponse(HttpStatus status, String error, String messageDetail) {
+    private ApiResponseTemplate<Void> buildErrorResponse(HttpStatus status, String message) {
         return ApiResponseTemplate.<Void>builder()
                 .httpStatusCode(status.value())  // **HTTP 狀態碼**
-                .error(error)                    // **錯誤識別碼**
-                .messageDetail(messageDetail)    // **錯誤詳細資訊**
+                .success(false)                // **API 請求是否成功**
+                .message(message)              // **錯誤訊息**
                 .path(request.getRequestURI())   // **請求的 API 路徑**
-                .traceId(UUID.randomUUID().toString()) // **產生唯一識別碼，方便除錯**
                 .build();
     }
-
-
-
 
 
     /**
@@ -105,7 +99,7 @@ public class GlobalExceptionHandler {
      * @return 驗證錯誤的欄位與錯誤訊息的 Map
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public  ApiResponseTemplate<Void> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ApiResponseTemplate<Void> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
 
         // 取得所有驗證錯誤的欄位與對應的錯誤訊息
@@ -113,6 +107,6 @@ public class GlobalExceptionHandler {
             errors.put(error.getField(), error.getDefaultMessage());
         }
 
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "REQUEST_ERROR", "請求參數錯誤");
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "REQUEST_ERROR");
     }
 }

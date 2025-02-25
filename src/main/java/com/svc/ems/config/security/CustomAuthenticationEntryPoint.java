@@ -35,10 +35,9 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         // **構建 API 錯誤回應**
         ApiResponseTemplate<Void> errorResponse = ApiResponseTemplate.<Void>builder()
                 .httpStatusCode(HttpStatus.UNAUTHORIZED.value()) // **401 狀態碼**
-                .error("UNAUTHORIZED")  // **錯誤類型**
-                .messageDetail("Token is missing or invalid") // **錯誤訊息**
+                .message("Unauthorized") // **錯誤訊息**
+                .success(false) // **成功狀態**
                 .path(request.getRequestURI()) // **請求的 API 路徑**
-                .traceId(UUID.randomUUID().toString()) // **生成唯一請求識別碼**
                 .build();
 
         // **設定回應類型 & 狀態碼**

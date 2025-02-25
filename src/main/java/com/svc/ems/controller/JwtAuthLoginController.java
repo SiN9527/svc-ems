@@ -4,6 +4,8 @@ import com.svc.ems.dto.auth.LoginRequest;
 import com.svc.ems.dto.auth.UserLoginResponse;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.svc.auth.JwtAuthLoginService;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,9 +26,9 @@ public class JwtAuthLoginController {
 
 
     @PostMapping("/login")
-    public ApiResponseTemplate<UserLoginResponse> authLogin(@RequestBody LoginRequest req) {
+    public ResponseEntity<ApiResponseTemplate<UserLoginResponse>> authLogin(@RequestBody LoginRequest req, HttpServletResponse response) {
 
         // 返回 JWT 和其他信息
-        return jwtAuthLoginService.authLogin(req);
+        return jwtAuthLoginService.authLogin(req,response);
     }
 }
