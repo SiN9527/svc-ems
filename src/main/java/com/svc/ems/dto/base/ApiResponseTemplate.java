@@ -35,7 +35,7 @@ public class ApiResponseTemplate<E> implements Serializable {
     /**
      * 是否成功
      */
-    @JsonProperty("success")
+    @JsonProperty("Success")
     private boolean success;
 
     /**
@@ -47,25 +47,25 @@ public class ApiResponseTemplate<E> implements Serializable {
     /**
      * 錯誤或成功的訊息
      */
-    @JsonProperty("message")
+    @JsonProperty("Message")
     private String message;
 
     /**
      * 具體的回應數據
      */
-    @JsonProperty("data")
+    @JsonProperty("Data")
     private E data;
 
     /**
      * API 請求的時間戳
      */
-    @JsonProperty("timestamp")
+    @JsonProperty("Timestamp")
     private Long timestamp;
 
     /**
      * 請求的 URI（方便 Debug）
      */
-    @JsonProperty("path")
+    @JsonProperty("Path")
     private String path;
 
     /**

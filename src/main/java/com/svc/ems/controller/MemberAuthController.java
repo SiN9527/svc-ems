@@ -6,6 +6,7 @@ import com.svc.ems.dto.auth.MemberRegisterRequest;
 import com.svc.ems.dto.auth.MemberResetPwdRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.svc.auth.MemberAuthService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +32,7 @@ public class MemberAuthController {
 
     //會員註冊
     @PostMapping("/entrance/register")
+    @Operation(summary = "會員註冊")
     public ResponseEntity<ApiResponseTemplate<String>> memberRegister(@RequestBody MemberRegisterRequest req) {
 
         // 返回 JWT 和其他信息
@@ -39,18 +41,21 @@ public class MemberAuthController {
 
     //會員驗證
     @GetMapping("/entrance/verify")
+    @Operation(summary = "會員註冊驗證")
     public ResponseEntity<ApiResponseTemplate<String>> verifyEmail(@RequestBody Map<String, String> token, HttpServletResponse response) {
         return memberAuthService.verifyEmail(token, response);
     }
 
     //會員忘記密碼
     @PostMapping("/entrance/forgotPwd")
+    @Operation(summary = "會員找回密碼")
     public ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(@RequestBody MemberPwdUpdateRequest req, @AuthenticationPrincipal UserDetails userDetails) {
         return memberAuthService.memberForgotPwd(req, userDetails);
     }
 
     //會員重設密碼
     @PostMapping("/entrance/ResetPwd")
+    @Operation(summary = "會員重設密碼")
     public ResponseEntity<ApiResponseTemplate<?>> memberResetPwd(@RequestBody MemberResetPwdRequest req, @AuthenticationPrincipal UserDetails userDetails) {
         return memberAuthService.memberResetPwd(req, userDetails);
     }
@@ -58,6 +63,7 @@ public class MemberAuthController {
     //會員登出
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
+    @Operation(summary = "會員登出")
     public ResponseEntity<ApiResponseTemplate<?>> memberLogout(HttpServletResponse response) {
         return memberAuthService.memberLogout(response);
     }
@@ -67,6 +73,7 @@ public class MemberAuthController {
     //取得個人資料
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile")
+    @Operation(summary = "登入者取得個人資料")
     public ResponseEntity<ApiResponseTemplate<MemberProfileResponse>> memberGetProfile(@AuthenticationPrincipal UserDetails userDetails) {
         return memberAuthService.memberGetProfile(userDetails);
     }
@@ -74,16 +81,17 @@ public class MemberAuthController {
     // 修改密碼
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/updatePwd")
-
-    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(@RequestBody MemberPwdUpdateRequest req, @AuthenticationPrincipal UserDetails userDetails) {
-        return memberAuthService.memberUpdatePwd(req, userDetails);
+    @Operation(summary = "登入者修改密碼")
+    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(@RequestBody MemberPwdUpdateRequest req, @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
+        return memberAuthService.memberUpdatePwd(req, userDetails, response);
     }
 
     //更新token
-   @PostMapping("/refreshToken")
+    @PostMapping("/refreshToken")
+    @Operation(summary = "登入者 刷新 Cookie 與Token ")
     public ResponseEntity<ApiResponseTemplate<?>> memberRefreshToken(@CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken,
                                                                      HttpServletResponse response) {
-    return memberAuthService.memberRefreshToken(refreshToken, response);
+        return memberAuthService.memberRefreshToken(refreshToken, response);
     }
 
     ;

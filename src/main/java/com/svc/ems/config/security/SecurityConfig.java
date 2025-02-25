@@ -55,6 +55,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 放行 /api/auth/** 路徑，不需要 JWT 認證
                         .requestMatchers("/api/auth/member/entrance/**").permitAll()
+                        .requestMatchers("/api/auth/clearToken").permitAll()
+                        .requestMatchers("/api/auth/getToken").permitAll()
                         .requestMatchers("/api/auth/common/**").permitAll()
                         // 允許所有 OPTIONS 請求，避免預檢請求被阻擋 (放行Token)
                         // 瀏覽器會先發送一個 OPTIONS 預檢請求來確認 CORS 配置是否允許這樣的請求

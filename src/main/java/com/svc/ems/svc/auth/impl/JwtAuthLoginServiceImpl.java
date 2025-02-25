@@ -50,7 +50,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
     }
 
     @Override
-    public  ResponseEntity<ApiResponseTemplate<AdminLoginResponse>> authLogin(LoginRequest loginRequest, HttpServletResponse response) {
+    public  ResponseEntity<ApiResponseTemplate<String>> authLogin(LoginRequest loginRequest, HttpServletResponse response) {
 
         String email = loginRequest.getEmail();
         String password = loginRequest.getPassword();
@@ -102,26 +102,31 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         }
 
         // 生成 JWT
+
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(auth -> auth.getAuthority().replace("ROLE_", ""))
                 .toList();
+        String accessToken = jwtUtil.generateAccessToken(email, "MEMBER", roles);
+        String refreshToken = jwtUtil.generateRefreshToken(email);
 
+        // **存入 HttpOnly Cookie**
+        Cookie accessCookie = new Cookie("AUTH_TOKEN", accessToken);
+        accessCookie.setHttpOnly(true);
+        accessCookie.setSecure(true);
+        accessCookie.setPath("/");
+        accessCookie.setMaxAge(60 * 60 * 2); // 2 小時有效
 
-        String token = jwtUtil.generateToken(email, type, roles);
-        log.info("email: {}", token);
-        logger.info("AdminLoginResponse: {}", new AdminLoginResponse(token, roles));
-        // 返回 JWT 和其他信息
-        // 使用 ApiResponse.success() 包裝成功訊息與資料，再回傳 ResponseEntity
+        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", refreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(7 * 24 * 60 * 60);  // 7 天有效
 
-        Cookie cookie = new Cookie("AUTH_TOKEN", token);
-        cookie.setHttpOnly(true);  // 無法透過 JavaScript 存取
-        cookie.setSecure(true);    // 只允許 HTTPS
-        cookie.setPath("/");       // 全域有效
-        cookie.setMaxAge(60 * 60);  // 1 小時過期
-        response.addCookie(cookie);
+        response.addCookie(accessCookie);
+        response.addCookie(refreshCookie);
 
         // 6️⃣ 回應成功消息
-        return ResponseEntity.ok(ApiResponseTemplate.success("member login success",  new AdminLoginResponse(token, roles)));
+        return ResponseEntity.ok(ApiResponseTemplate.success("member login success"));
 
     }
 

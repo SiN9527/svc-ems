@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface JwtAuthLoginService {
 
-    public ResponseEntity<ApiResponseTemplate<AdminLoginResponse>> authLogin(LoginRequest req, HttpServletResponse response);
+    public ResponseEntity<ApiResponseTemplate<String>> authLogin(LoginRequest req, HttpServletResponse response);
 
 
 }

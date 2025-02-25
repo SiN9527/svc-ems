@@ -237,17 +237,12 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     @Override
     public ResponseEntity<ApiResponseTemplate<?>> memberLogout(HttpServletResponse response) {
         // **清除 Cookie**
+        // **清除 Cookie**
         Cookie accessCookie = new Cookie("AUTH_TOKEN", null);
-        accessCookie.setHttpOnly(true);
-        accessCookie.setSecure(true);
-        accessCookie.setPath("/");
-        accessCookie.setMaxAge(0);
+        clearCookies(accessCookie);
 
         Cookie refreshCookie = new Cookie("REFRESH_TOKEN", null);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(0);
+        clearCookies(refreshCookie);
 
         response.addCookie(accessCookie);
         response.addCookie(refreshCookie);
@@ -256,17 +251,28 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     }
 
     @Override
-    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(MemberPwdUpdateRequest req, UserDetails userDetails) {
+    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(MemberPwdUpdateRequest req, UserDetails userDetails,HttpServletResponse response) {
 
 
-        Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(req.getToken(), memberMainRepository);
+        Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(userDetails, memberMainRepository);
         if (member.isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "MEMBER_NOT_FOUND"));
         }
         String newPassword = (passwordEncoder.encode(req.getNewPassword()));
         member.get().setPassword(newPassword);
         memberMainRepository.save(member.get());
-        return ResponseEntity.ok(ApiResponseTemplate.success("Password updated successfully"));
+
+        // **清除 Cookie**
+        Cookie accessCookie = new Cookie("AUTH_TOKEN", null);
+        clearCookies(accessCookie);
+
+        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", null);
+        clearCookies(refreshCookie);
+
+        response.addCookie(accessCookie);
+        response.addCookie(refreshCookie);
+
+        return ResponseEntity.ok(ApiResponseTemplate.success("Password updated successfully , please login again"));
     }
 
 
@@ -296,7 +302,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         accessCookie.setHttpOnly(true);
         accessCookie.setSecure(true);
         accessCookie.setPath("/");
-        accessCookie.setMaxAge(60 * 60);
+        accessCookie.setMaxAge(60 * 60 * 2); // 2 小時有效
 
         Cookie refreshCookie = new Cookie("REFRESH_TOKEN", refreshToken);
         refreshCookie.setHttpOnly(true);
@@ -364,6 +370,13 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     @Override
     public ResponseEntity<ApiResponseTemplate<?>> memberUpdateProfile() {
         return null;
+    }
+
+    private void clearCookies(Cookie cookie) {
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
     }
 
 }

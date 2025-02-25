@@ -8,6 +8,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -21,11 +22,13 @@ public class JwtUtil {
 
     private final SecretKey secretKey; // JWT 簽名密鑰
     private final long expirationMillis; // JWT 過期時間
+    private final long refreshExpirationMillis; // Refresh Token 過期時間
 
     // 從 application.properties 讀取密鑰和過期時間
-    public JwtUtil(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") long expirationMillis) {
+    public JwtUtil(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") long expirationMillis,@Value("${jwt.refreshExpiration}") long refreshExpirationMillis) {
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)); // Base64 解碼密鑰
         this.expirationMillis = expirationMillis;
+        this.refreshExpirationMillis = refreshExpirationMillis;
     }
 
     // **生成 JWT Token**
@@ -128,21 +131,11 @@ public class JwtUtil {
     }
 
     // **驗證 JWT 並從 Repository 取得對應的使用者**
-    public <T> Optional<T> validateAndGetEntity(String token, JpaRepository<T, String> repository) {
-        // 1️⃣ 解析 Token 取得 Email
-        String email;
-        try {
-            email = extractUsername(token); // **從 Token 取得 Email**
-        } catch (Exception e) {
-            throw new RuntimeException("TOKEN_INVALID: 驗證失敗，無效的 Token");
-        }
+    public <T> Optional<T> validateAndGetEntity(UserDetails userDetails, JpaRepository<T, String> repository) {
 
-        // 2️⃣ 檢查 Token 是否過期
-        if (isTokenExpired(token)) {
-            throw new RuntimeException("TOKEN_EXPIRED: 驗證失敗，Token 已過期");
-        }
+        String email = userDetails.getUsername() ;
 
-        // 3️⃣ 從 Repository 查找對應的使用者
+        //  Repository 查找對應的使用者
         return repository.findAll().stream()
                 .filter(user -> {
                     try {
@@ -155,7 +148,7 @@ public class JwtUtil {
   }
 
     public String generateRefreshToken(String email) {
-        long refreshExpirationMillis  = 3600;
+
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())

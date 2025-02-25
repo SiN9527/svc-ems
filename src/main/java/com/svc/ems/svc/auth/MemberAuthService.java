@@ -34,7 +34,7 @@ public interface MemberAuthService {
     // 更新個人資料
     public ResponseEntity<ApiResponseTemplate<?>> memberUpdateProfile();
 
-    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(MemberPwdUpdateRequest req, UserDetails userDetails);
+    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(MemberPwdUpdateRequest req, UserDetails userDetails,HttpServletResponse response);
 
     public ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(MemberPwdUpdateRequest req, UserDetails userDetails);
 
