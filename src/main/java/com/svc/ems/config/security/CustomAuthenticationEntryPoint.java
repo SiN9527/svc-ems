@@ -3,6 +3,7 @@ package com.svc.ems.config.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -23,28 +24,50 @@ import java.util.UUID;
 @Component
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper = new ObjectMapper(); // **JSON 轉換工具**
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void commence(HttpServletRequest request,
-                         HttpServletResponse response,
-                         AuthenticationException authException) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+            throws IOException, ServletException {
 
-        log.warn("Unauthorized request to: {}", request.getRequestURI()); // **記錄未授權請求**
 
-        // **構建 API 錯誤回應**
+        log.warn("Unauthorized request to: {}", request.getRequestURI());
+
+        String errorMessage = "Unauthorized";
+        String tokenError = (String) request.getAttribute("TOKEN_ERROR");
+
+        if ("Invalid user type.".equals(tokenError)) {
+            errorMessage = "Invalid user type. Access denied.";
+        } else if ("Invalid or expired token.".equals(tokenError)) {
+            errorMessage = "Your session has expired. Please log in again.";
+            clearAuthCookies(response);
+        } else if (tokenError != null) {
+            errorMessage = tokenError; // 捕捉未知的 Token 錯誤
+        }
+
+        // **構建 API 回應**
         ApiResponseTemplate<Void> errorResponse = ApiResponseTemplate.<Void>builder()
-                .httpStatusCode(HttpStatus.UNAUTHORIZED.value()) // **401 狀態碼**
-                .message("Unauthorized") // **錯誤訊息**
-                .success(false) // **成功狀態**
-                .path(request.getRequestURI()) // **請求的 API 路徑**
+                .httpStatusCode(HttpStatus.UNAUTHORIZED.value())
+                .errorCode("UNAUTHORIZED")
+                .message(errorMessage)
+                .success(false)
+                .path(request.getRequestURI())
                 .build();
 
-        // **設定回應類型 & 狀態碼**
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
-        // **將 `ApiResponse` 轉換為 JSON 回應**
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+    }
+
+    /**
+     * **清除 Token Cookie**
+     */
+    private void clearAuthCookies(HttpServletResponse response) {
+        Cookie authCookie = new Cookie("AUTH_TOKEN", null);
+        authCookie.setHttpOnly(true);
+        authCookie.setSecure(true);
+        authCookie.setPath("/");
+        authCookie.setMaxAge(0);
+        response.addCookie(authCookie);
     }
 }

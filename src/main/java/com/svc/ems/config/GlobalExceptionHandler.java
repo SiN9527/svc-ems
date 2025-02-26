@@ -84,6 +84,7 @@ public class GlobalExceptionHandler {
         return ApiResponseTemplate.<Void>builder()
                 .httpStatusCode(status.value())  // **HTTP 狀態碼**
                 .success(false)                // **API 請求是否成功**
+                .errorCode(status.getReasonPhrase()) // **錯誤代碼**
                 .message(message)              // **錯誤訊息**
                 .path(request.getRequestURI())   // **請求的 API 路徑**
                 .build();
