@@ -5,7 +5,10 @@ import com.svc.ems.dto.auth.MemberPwdUpdateRequest;
 import com.svc.ems.dto.auth.MemberRegisterRequest;
 import com.svc.ems.dto.auth.MemberResetPwdRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
+import com.svc.ems.dto.common.CommonCodeList;
+import com.svc.ems.dto.common.CommonCodeReqDTO;
 import com.svc.ems.svc.auth.MemberAuthService;
+import com.svc.ems.svc.base.CommonCodeService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -22,11 +26,11 @@ public class MemberAuthController {
 
 
     private final MemberAuthService memberAuthService;
+    private final CommonCodeService commonCodeService;
 
-
-    public MemberAuthController(MemberAuthService memberAuthService) {
+    public MemberAuthController(MemberAuthService memberAuthService, CommonCodeService commonCodeService) {
         this.memberAuthService = memberAuthService;
-
+        this.commonCodeService = commonCodeService;
     }
 
 
@@ -37,6 +41,19 @@ public class MemberAuthController {
 
         // 返回 JWT 和其他信息
         return memberAuthService.memberRegister(req);
+    }
+
+    //CommonCode 暫放
+    @PostMapping("/entrance/searchByCodeType")
+    @Operation(summary = "CommonCode-根據codeType回傳資料，舉例['IDREC_LOCATION','INDUSTRY_CODE']")
+    public ResponseEntity<ApiResponseTemplate<Map<String, List<CommonCodeList>>>> searchByCodeType(@RequestBody CommonCodeReqDTO reqDTO) {
+        Map<String, List<CommonCodeList>> result = commonCodeService.searchByCodeTypes(reqDTO.getCodeType());
+
+        if (result != null && !result.isEmpty()) {
+            return ResponseEntity.ok(ApiResponseTemplate.success(result));
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
     //會員驗證
