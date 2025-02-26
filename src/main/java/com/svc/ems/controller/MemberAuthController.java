@@ -26,55 +26,11 @@ public class MemberAuthController {
 
 
     private final MemberAuthService memberAuthService;
-    private final CommonCodeService commonCodeService;
 
-    public MemberAuthController(MemberAuthService memberAuthService, CommonCodeService commonCodeService) {
+
+    public MemberAuthController(MemberAuthService memberAuthService) {
         this.memberAuthService = memberAuthService;
-        this.commonCodeService = commonCodeService;
-    }
 
-
-    //會員註冊
-    @PostMapping("/entrance/register")
-    @Operation(summary = "會員註冊")
-    public ResponseEntity<ApiResponseTemplate<String>> memberRegister(@RequestBody MemberRegisterRequest req) {
-
-        // 返回 JWT 和其他信息
-        return memberAuthService.memberRegister(req);
-    }
-
-    //CommonCode 暫放
-    @PostMapping("/entrance/searchByCodeType")
-    @Operation(summary = "CommonCode-根據codeType回傳資料，舉例['IDREC_LOCATION','INDUSTRY_CODE']")
-    public ResponseEntity<ApiResponseTemplate<Map<String, List<CommonCodeList>>>> searchByCodeType(@RequestBody CommonCodeReqDTO reqDTO) {
-        Map<String, List<CommonCodeList>> result = commonCodeService.searchByCodeTypes(reqDTO.getCodeType());
-
-        if (result != null && !result.isEmpty()) {
-            return ResponseEntity.ok(ApiResponseTemplate.success(result));
-        }
-
-        return ResponseEntity.notFound().build();
-    }
-
-    //會員驗證
-    @GetMapping("/entrance/verify")
-    @Operation(summary = "會員註冊驗證")
-    public ResponseEntity<ApiResponseTemplate<String>> verifyEmail(@RequestBody Map<String, String> token, HttpServletResponse response) {
-        return memberAuthService.verifyEmail(token, response);
-    }
-
-    //會員忘記密碼
-    @PostMapping("/entrance/forgotPwd")
-    @Operation(summary = "會員找回密碼")
-    public ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(@RequestBody MemberPwdUpdateRequest req, @AuthenticationPrincipal UserDetails userDetails) {
-        return memberAuthService.memberForgotPwd(req, userDetails);
-    }
-
-    //會員重設密碼
-    @PostMapping("/entrance/ResetPwd")
-    @Operation(summary = "會員重設密碼")
-    public ResponseEntity<ApiResponseTemplate<?>> memberResetPwd(@RequestBody MemberResetPwdRequest req, @AuthenticationPrincipal UserDetails userDetails) {
-        return memberAuthService.memberResetPwd(req, userDetails);
     }
 
     //會員登出
@@ -104,6 +60,7 @@ public class MemberAuthController {
     }
 
     //更新token
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/refreshToken")
     @Operation(summary = "登入者 刷新 Cookie 與Token ")
     public ResponseEntity<ApiResponseTemplate<?>> memberRefreshToken(@CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken,

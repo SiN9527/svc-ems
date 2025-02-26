@@ -1,39 +1,47 @@
 package com.svc.ems.svc.base.impl;
 
+import com.svc.ems.config.jwt.JwtAdminDetailsService;
 import com.svc.ems.config.jwt.JwtMemberDetailsService;
-import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
 import com.svc.ems.dto.auth.SwaggerUserLoginRequest;
+import com.svc.ems.dto.common.CommonCodeList;
+import com.svc.ems.entity.CommonCodeEntity;
 import com.svc.ems.repo.AdminMainRepository;
+import com.svc.ems.repo.CommonCodeRepository;
 import com.svc.ems.svc.base.BaseService;
+import com.svc.ems.utils.MapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
 public class BaseServiceImpl implements BaseService {
 
     private final JwtUtil jwtUtil;
-    private final JwtUserDetailsService userDetailsService;
+    private final JwtAdminDetailsService userDetailsService;
     private final JwtMemberDetailsService memberDetailsService;
     private final PasswordEncoder passwordEncoder;
-    private final AdminMainRepository userRepository;
+    private final AdminMainRepository adminMainRepository;
+    private final CommonCodeRepository commonCodeRepository;
 
     public BaseServiceImpl(JwtUtil jwtUtil,
-                           JwtUserDetailsService userDetailsService,
+                           JwtAdminDetailsService userDetailsService,
                            JwtMemberDetailsService memberDetailsService,
                            PasswordEncoder passwordEncoder,
-                           AdminMainRepository userRepository) {
+                           AdminMainRepository adminMainRepository, CommonCodeRepository commonCodeRepository) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.memberDetailsService = memberDetailsService;
         this.passwordEncoder = passwordEncoder;
-        this.userRepository = userRepository;
+        this.adminMainRepository = adminMainRepository;
+        this.commonCodeRepository = commonCodeRepository;
     }
 
 
@@ -72,5 +80,19 @@ public class BaseServiceImpl implements BaseService {
 
         return jwtUtil.generateToken(email, type, roles);
 
+    }
+
+
+    @Override
+    public Map<String, List<CommonCodeList>> searchByCodeTypes(List<String> codeTypes) {
+        Map<String, List<CommonCodeList>> result = new HashMap<>();
+
+        for (String codeType : codeTypes) {
+            List<CommonCodeEntity> byCodeTypes = commonCodeRepository.findByCodeType(codeType);
+            List<CommonCodeList> commonCodeLists = MapperUtils.mapList(byCodeTypes, CommonCodeList.class);
+            result.put(codeType, commonCodeLists);
+        }
+
+        return result;
     }
 }

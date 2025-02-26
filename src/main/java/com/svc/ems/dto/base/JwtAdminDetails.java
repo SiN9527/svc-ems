@@ -9,12 +9,12 @@ import java.util.Collection;
 import java.util.List;
 
 @Data
-public class JwtUserDetails implements UserDetails {
+public class JwtAdminDetails implements UserDetails {
 
     private final AdminMainEntity userMain;
     private final List<GrantedAuthority> authorities; // 新增角色清單
 
-    public JwtUserDetails(AdminMainEntity userMain, List<GrantedAuthority> authorities) {
+    public JwtAdminDetails(AdminMainEntity userMain, List<GrantedAuthority> authorities) {
         this.userMain = userMain;
         this.authorities = authorities; // 接收角色權限
     }

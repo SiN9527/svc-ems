@@ -30,22 +30,11 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
 
-
-        log.warn("Unauthorized request to: {}", request.getRequestURI());
+        log.warn("Unauthorized request to: {} | Reason: {}", request.getRequestURI(), authException.getMessage());
 
         String errorMessage = "Unauthorized";
-        String tokenError = (String) request.getAttribute("TOKEN_ERROR");
+        clearAuthCookies(response);
 
-        if ("Invalid user type.".equals(tokenError)) {
-            errorMessage = "Invalid user type. Access denied.";
-        } else if ("Invalid or expired token.".equals(tokenError)) {
-            errorMessage = "Your session has expired. Please log in again.";
-            clearAuthCookies(response);
-        } else if (tokenError != null) {
-            errorMessage = tokenError; // 捕捉未知的 Token 錯誤
-        }
-
-        // **構建 API 回應**
         ApiResponseTemplate<Void> errorResponse = ApiResponseTemplate.<Void>builder()
                 .httpStatusCode(HttpStatus.UNAUTHORIZED.value())
                 .errorCode("UNAUTHORIZED")
@@ -59,9 +48,6 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 
-    /**
-     * **清除 Token Cookie**
-     */
     private void clearAuthCookies(HttpServletResponse response) {
         Cookie authCookie = new Cookie("AUTH_TOKEN", null);
         authCookie.setHttpOnly(true);

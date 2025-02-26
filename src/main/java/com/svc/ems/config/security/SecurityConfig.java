@@ -1,8 +1,8 @@
 package com.svc.ems.config.security;
 
+import com.svc.ems.config.jwt.JwtAdminDetailsService;
 import com.svc.ems.config.jwt.JwtAuthenticationFilter;
 import com.svc.ems.config.jwt.JwtMemberDetailsService;
-import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
 import com.svc.ems.repo.AdminMainRepository;
 import jakarta.annotation.Resource;
@@ -54,15 +54,14 @@ public class SecurityConfig {
                 // 設定 URL 路徑的存取權限
                 .authorizeHttpRequests(auth -> auth
                         // 放行 /api/auth/** 路徑，不需要 JWT 認證
-                        .requestMatchers("/api/auth/member/entrance/**").permitAll()
-                        .requestMatchers("/api/auth/clearToken").permitAll()
-                        .requestMatchers("/api/auth/getToken").permitAll()
-                        .requestMatchers("/api/auth/common/**").permitAll()
+                        .requestMatchers("/api/sys/member/**").permitAll()
+                        .requestMatchers("/api/base/**").permitAll()
+                        .requestMatchers("/api/sys/admin/**").permitAll()
                         // 允許所有 OPTIONS 請求，避免預檢請求被阻擋 (放行Token)
                         // 瀏覽器會先發送一個 OPTIONS 預檢請求來確認 CORS 配置是否允許這樣的請求
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // 放行 Swagger 相關路徑
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // **Swagger 白名單**
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html,").permitAll() // **Swagger 白名單**
                         // 其他所有請求皆需要驗證
                         .anyRequest().authenticated()
                 )
@@ -102,7 +101,7 @@ public class SecurityConfig {
     @Bean("userDetailsService") // 指定 Bean 名稱，方便後續使用 @Qualifier 區分
     public UserDetailsService userDetailsService(AdminMainRepository adminMainRepository,
                                                  AdminMainRoleRepository adminMainRoleRepository) {
-        return new JwtUserDetailsService(adminMainRepository, adminMainRoleRepository);
+        return new JwtAdminDetailsService(adminMainRepository, adminMainRoleRepository);
     }
 
     /**
