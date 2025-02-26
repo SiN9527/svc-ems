@@ -1,9 +1,6 @@
 package com.svc.ems.config.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -159,18 +156,31 @@ public class JwtUtil {
 
     public boolean validateRefreshToken(String refreshToken) {
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(secretKey) // 使用相同密鑰驗證
+            Jws<Claims> claimsJws = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
                     .build()
-                    .parseClaimsJws(refreshToken)
-                    .getBody();
+                    .parseClaimsJws(refreshToken);
 
-            // 確保 Token 沒有過期
-            return !claims.getExpiration().before(new Date());
-        } catch (JwtException | IllegalArgumentException e) {
-            return false; // 無效的 Token
+            Date expiration = claimsJws.getBody().getExpiration();
+            return expiration.after(new Date());
+        } catch (Exception e) {
+            return false;
         }
     }
+//    public boolean validateRefreshToken(String refreshToken) {
+//        try {
+//            Claims claims = Jwts.parserBuilder()
+//                    .setSigningKey(secretKey) // 使用相同密鑰驗證
+//                    .build()
+//                    .parseClaimsJws(refreshToken)
+//                    .getBody();
+//
+//            // 確保 Token 沒有過期
+//            return !claims.getExpiration().before(new Date());
+//        } catch (JwtException | IllegalArgumentException e) {
+//            return false; // 無效的 Token
+//        }
+//    }
 
     public String generateAccessToken(String email, String type, List<String> roles) {
         return Jwts.builder()

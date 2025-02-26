@@ -38,11 +38,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         // **從 Cookie 或 Header 取得 Token**
-        String token = getAuthToken(request);
-        if (token == null) { // 如果請求中沒有 Token，直接放行
+
+        String requestURI = request.getRequestURI(); // 取得請求的 URL 路徑
+
+        // **🔍 檢查是否是 refresh token 請求**
+        boolean isRefreshRequest = requestURI.contains("/auth/member/refresh");
+
+        // **根據 API 選擇適當的 Token 來驗證**
+        String token = getAuthToken(request, isRefreshRequest);
+
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
+
 
         try {
             // **解析 Token 取得使用者名稱 (Email)**
@@ -62,13 +71,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     userDetails = memberDetailsService.loadUserByUsername(username);
                 } else {
                     // **如果身份類型不合法，直接回傳錯誤響應**
-                    sendErrorResponse(response, "Invalid user type.");
+                    request.setAttribute("TOKEN_ERROR", "Invalid user type.");
+                    filterChain.doFilter(request, response);
                     return;
                 }
-
+                // **🔍 根據 API 選擇驗證方式**
+                boolean isValidToken = isRefreshRequest ? jwtUtil.validateRefreshToken(token) : jwtUtil.validateToken(token, userType);
                 // **驗證 Token 是否有效**
-                if (!jwtUtil.validateToken(token, userType)) {
-                    sendErrorResponse(response, "Invalid or expired token.");
+                if (!isValidToken) {
+                    request.setAttribute("TOKEN_ERROR", "Invalid or expired token.");
+                    filterChain.doFilter(request, response);
                     return;
                 }
 
@@ -79,7 +91,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             // **處理 Token 解析錯誤，例如格式錯誤、過期等**
-            sendErrorResponse(response, "Token validation failed: " + e.getMessage());
+            request.setAttribute("TOKEN_ERROR", "Token validation failed: " + e.getMessage());
             return;
         }
 
@@ -91,11 +103,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * **從請求中取得 JWT Token**
      * Token 優先從 Cookie 讀取，若 Cookie 沒有，再從 `Authorization` Header 讀取
      */
-    private String getAuthToken(HttpServletRequest request) {
+    private String getAuthToken(HttpServletRequest request, boolean isRefreshRequest) {
+        String cookieName = isRefreshRequest ? "REFRESH_TOKEN" : "AUTH_TOKEN";
+
         // **1️⃣ 嘗試從 Cookie 取得 Token**
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if ("AUTH_TOKEN".equals(cookie.getName())) { // **Cookie 名稱是 `AUTH_TOKEN`**
+                if (cookieName.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }
@@ -121,6 +135,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void sendErrorResponse(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 設定 HTTP 狀態碼
         response.setContentType("application/json"); // 設定回應類型為 JSON
+
+        // **如果是 Token 過期，清除 Cookie**
+        if ("Invalid or expired token.".equals(message) || "TOKEN_EXPIRED".equals(message)) {
+            Cookie authCookie = new Cookie("AUTH_TOKEN", null);
+            authCookie.setHttpOnly(true);
+            authCookie.setSecure(true);
+            authCookie.setPath("/");
+            authCookie.setMaxAge(0); // **設置 MaxAge 為 0，立即刪除**
+            response.addCookie(authCookie);
+
+            // **回傳「請重新登入」的訊息**
+            message = "Your session has expired. Please log in again.";
+        }
 
         // 使用 ApiResponseTemplate 產生標準錯誤回應
         ApiResponseTemplate<?> errorResponse = ApiResponseTemplate.fail(HttpServletResponse.SC_UNAUTHORIZED, message);

@@ -62,7 +62,7 @@ public class SecurityConfig {
                         // 瀏覽器會先發送一個 OPTIONS 預檢請求來確認 CORS 配置是否允許這樣的請求
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // 放行 Swagger 相關路徑
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // **Swagger 白名單**
                         // 其他所有請求皆需要驗證
                         .anyRequest().authenticated()
                 )

@@ -44,6 +44,14 @@ public class ApiResponseTemplate<E> implements Serializable {
     @JsonProperty("HttpStatusCode")
     private Integer httpStatusCode;
 
+
+
+    /**
+     * 錯誤代碼
+     */
+    @JsonProperty("ErrorCode")
+    private String errorCode;
+
     /**
      * 錯誤或成功的訊息
      */
@@ -80,6 +88,7 @@ public class ApiResponseTemplate<E> implements Serializable {
         ApiResponseTemplate<E> response = new ApiResponseTemplate<>();
         response.success = true;
         response.httpStatusCode = 200;
+        response.errorCode = "0000";
         response.message = "Success";
         response.data = data;
         return response;
@@ -90,6 +99,7 @@ public class ApiResponseTemplate<E> implements Serializable {
         response.success = true;
         response.httpStatusCode = 200;
         response.message = message;
+        response.errorCode = "0000";
         response.data = data;
         return response;
     }
@@ -98,6 +108,16 @@ public class ApiResponseTemplate<E> implements Serializable {
     public static <E> ApiResponseTemplate<E> fail(int httpStatusCode, String message) {
         ApiResponseTemplate<E> response = new ApiResponseTemplate<>();
         response.success = false;
+        response.errorCode = "9999";
+        response.httpStatusCode = httpStatusCode;
+        response.message = message;
+        return response;
+    }
+
+    public static <E> ApiResponseTemplate<E> fail(int httpStatusCode,String errorCode, String message) {
+        ApiResponseTemplate<E> response = new ApiResponseTemplate<>();
+        response.success = false;
+        response.errorCode = "errorCode";
         response.httpStatusCode = httpStatusCode;
         response.message = message;
         return response;
@@ -122,6 +142,11 @@ public class ApiResponseTemplate<E> implements Serializable {
 
         public Builder<E> httpStatusCode(int httpStatusCode) {
             response.httpStatusCode = httpStatusCode;
+            return this;
+        }
+
+        public Builder<E> errorCode(String errorCode) {
+            response.errorCode = errorCode;
             return this;
         }
 
