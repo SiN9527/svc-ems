@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public class UserJwtService extends BaseJwtService {
-    public UserJwtService(JwtUtil jwtUtil) {
+public class AdminJwtService extends BaseJwtService {
+    public AdminJwtService(JwtUtil jwtUtil) {
         super(jwtUtil, "USER");
     }
 }

@@ -1,7 +1,7 @@
 package com.svc.ems.svc.auth.impl;
 
+import com.svc.ems.config.jwt.JwtAdminDetailsService;
 import com.svc.ems.config.jwt.JwtMemberDetailsService;
-import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
 import com.svc.ems.dto.auth.*;
 import com.svc.ems.dto.base.ApiResponseTemplate;
@@ -43,7 +43,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     // 使用 LoggerFactory 建立 Logger 實例，傳入當前類別作為參數
     private static final Logger logger = LoggerFactory.getLogger(MemberAuthServiceImpl.class);
     private final JwtUtil jwtUtil;
-    private final JwtUserDetailsService userDetailsService;
+    private final JwtAdminDetailsService userDetailsService;
     private final JwtMemberDetailsService memberDetailsService;
     private final PasswordEncoder passwordEncoder;
 
@@ -54,7 +54,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     private final MapperUtils mapperUtils;
 
     public MemberAuthServiceImpl(MemberMainRepository memberMainRepository, JwtUtil jwtUtil,
-                                 JwtUserDetailsService userDetailsService,
+                                 JwtAdminDetailsService userDetailsService,
                                  JwtMemberDetailsService memberDetailsService,
                                  PasswordEncoder passwordEncoder,
                                  EmailService emailService, AdminMainRepository userRepository, MemberMainRoleRepository memberMainRoleRepository, MapperUtils mapperUtils) {

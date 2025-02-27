@@ -1,13 +1,13 @@
 package com.svc.ems.svc.auth.impl;
 
+import com.svc.ems.config.jwt.JwtAdminDetailsService;
 import com.svc.ems.config.jwt.JwtMemberDetailsService;
-import com.svc.ems.config.jwt.JwtUserDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
 import com.svc.ems.dto.auth.AdminRegisterRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.AdminMainEntity;
 import com.svc.ems.repo.AdminMainRepository;
-import com.svc.ems.svc.auth.UserAuthService;
+import com.svc.ems.svc.auth.AdminAuthService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,21 +18,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @Slf4j
 @Service
-public class UserAuthServiceImpl implements UserAuthService {
+public class AdminAuthServiceImpl implements AdminAuthService {
 
     // 使用 LoggerFactory 建立 Logger 實例，傳入當前類別作為參數
-    private static final Logger logger = LoggerFactory.getLogger(UserAuthServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(AdminAuthServiceImpl.class);
     private final JwtUtil jwtUtil;
-    private final JwtUserDetailsService userDetailsService;
+    private final JwtAdminDetailsService userDetailsService;
     private final JwtMemberDetailsService memberDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final AdminMainRepository adminMainRepository;
 
-    public UserAuthServiceImpl(JwtUtil jwtUtil,
-                               JwtUserDetailsService userDetailsService,
-                               JwtMemberDetailsService memberDetailsService,
-                               PasswordEncoder passwordEncoder,
-                               AdminMainRepository adminMainRepository) {
+    public AdminAuthServiceImpl(JwtUtil jwtUtil,
+                                JwtAdminDetailsService userDetailsService,
+                                JwtMemberDetailsService memberDetailsService,
+                                PasswordEncoder passwordEncoder,
+                                AdminMainRepository adminMainRepository) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.memberDetailsService = memberDetailsService;
