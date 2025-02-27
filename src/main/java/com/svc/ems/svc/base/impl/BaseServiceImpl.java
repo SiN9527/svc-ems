@@ -84,15 +84,14 @@ public class BaseServiceImpl implements BaseService {
 
 
     @Override
-    public Map<String, List<CommonCodeList>> searchByCodeTypes(List<String> codeTypes) {
-        Map<String, List<CommonCodeList>> result = new HashMap<>();
+    public List<CommonCodeList> searchByCodeTypes(List<String> codeTypes) {
+        List<CommonCodeList> resultList = new ArrayList<>();
 
         for (String codeType : codeTypes) {
             List<CommonCodeEntity> byCodeTypes = commonCodeRepository.findByCodeType(codeType);
-            List<CommonCodeList> commonCodeLists = MapperUtils.mapList(byCodeTypes, CommonCodeList.class);
-            result.put(codeType, commonCodeLists);
+            resultList.addAll(MapperUtils.mapList(byCodeTypes, CommonCodeList.class));
         }
 
-        return result;
+        return resultList;
     }
 }

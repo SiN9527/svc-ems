@@ -35,13 +35,12 @@ public class BaseController {
     //CommonCode 暫放
     @PostMapping("/getCommonCode")
     @Operation(summary = "CommonCode-根據codeType回傳資料，舉例['IDREC_LOCATION','INDUSTRY_CODE']")
-    public ResponseEntity<ApiResponseTemplate<Map<String, List<CommonCodeList>>>> searchByCodeType(@RequestBody CommonCodeReqDTO reqDTO) {
-        Map<String, List<CommonCodeList>> result = baseService.searchByCodeTypes(reqDTO.getCodeType());
+    public ResponseEntity<ApiResponseTemplate<List<CommonCodeList>>> searchByCodeType(@RequestBody CommonCodeReqDTO reqDTO) {
+        List<CommonCodeList> result = baseService.searchByCodeTypes(reqDTO.getCodeType());
 
         if (result != null && !result.isEmpty()) {
             return ResponseEntity.ok(ApiResponseTemplate.success(result));
         }
-
         return ResponseEntity.notFound().build();
     }
 

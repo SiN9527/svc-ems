@@ -11,7 +11,7 @@ public interface BaseService {
 
     public String getToken(SwaggerUserLoginRequest req);
 
-    Map<String, List<CommonCodeList>> searchByCodeTypes(List<String> codeTypes);
+    List<CommonCodeList> searchByCodeTypes(List<String> codeTypes);
 
 
 }
