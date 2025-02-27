@@ -1,7 +1,7 @@
-package com.svc.ems.svc.auth.impl;
+package com.svc.ems.svc.mail.impl;
 
 import com.svc.ems.config.jwt.JwtUtil;
-import com.svc.ems.svc.auth.EmailService;
+import com.svc.ems.svc.mail.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
