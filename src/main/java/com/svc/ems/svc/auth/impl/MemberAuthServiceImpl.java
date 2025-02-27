@@ -12,7 +12,7 @@ import com.svc.ems.exception.ServiceException;
 import com.svc.ems.repo.AdminMainRepository;
 import com.svc.ems.repo.MemberMainRepository;
 import com.svc.ems.repo.MemberMainRoleRepository;
-import com.svc.ems.svc.auth.EmailService;
+import com.svc.ems.svc.mail.EmailService;
 import com.svc.ems.svc.auth.MemberAuthService;
 import com.svc.ems.utils.MapperUtils;
 import jakarta.servlet.http.Cookie;
