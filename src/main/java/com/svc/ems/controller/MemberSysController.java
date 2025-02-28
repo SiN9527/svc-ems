@@ -48,7 +48,7 @@ public class MemberSysController {
 
 
     //會員驗證
-    @GetMapping("/verify")
+    @PostMapping("/verify")
     @Operation(summary = "會員註冊驗證")
     public ResponseEntity<ApiResponseTemplate<String>> verifyEmail(@RequestBody Map<String, String> token, HttpServletResponse response) {
         return memberAuthService.verifyEmail(token, response);
