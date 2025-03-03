@@ -8,6 +8,7 @@ import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.MemberMainEntity;
 import com.svc.ems.entity.MemberMainRoleEntity;
 import com.svc.ems.entity.MemberMainRolePkEntity;
+import com.svc.ems.enums.ErrorCode;
 import com.svc.ems.exception.ServiceException;
 import com.svc.ems.repo.AdminMainRepository;
 import com.svc.ems.repo.MemberMainRepository;
@@ -84,14 +85,14 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         if (memberMainRepository.existsByEmail(req.getEmail())) {
             // 使用 ApiResponse.fail() 包裝失敗訊息，再回傳 ResponseEntity
             return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(HttpStatus.BAD_REQUEST.value(),
-                    "Email already exists. Please use another email address."
+                    ErrorCode.EMAIL_ALREADY_REGISTERED
             ));
         }
 
         // 密碼格式驗證
         if (!isValidPassword(req.getPassword())) {
             return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(HttpStatus.BAD_REQUEST.value(),
-                    "Password must contain upper/lower case letters, numbers, and special characters."
+                    ErrorCode.PASSWORD_TOO_WEAK
             ));
 
 
@@ -130,14 +131,14 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         // **解析 Token**
         String email = jwtUtil.extractUsername(token);
         if (email == null || jwtUtil.isTokenExpired(token)) {
-            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "INVALID_OR_EXPIRED_TOKEN"));
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.TOKEN_INVALID));
         }
 
         // **更新資料庫，標記使用者已驗證**
         MemberMainEntity member = memberMainRepository.findByEmail(email)
                 .orElse(null);
         if (member == null) {
-            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND"));
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, ErrorCode.MEMBER_NOT_FOUND));
         }
 
         member.setEnabled(true);
@@ -161,7 +162,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         MemberMainEntity member = memberMainRepository.findByEmail(email).orElse(null);
 
         if (member == null) {
-            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND"));
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.MEMBER_NOT_FOUND));
         }
 
         // 建立回應對象
@@ -183,7 +184,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         String email = userDetails.getUsername();
         //  檢查會員是否存在
         if (!memberMainRepository.existsByEmail(email)) {
-            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND"));
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.MEMBER_NOT_FOUND));
         }
 
         //  發送密碼重設 Email
@@ -203,7 +204,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
         //  檢查密碼格式
         if (!isValidPassword(newPassword)) {
-            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "INVALID_PASSWORD"));
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.PASSWORD_TOO_WEAK));
         }
 
 
@@ -216,9 +217,9 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
         //  查找會員
         MemberMainEntity member = memberMainRepository.findByEmail(email)
-                .orElseThrow(() -> new ServiceException("無效的驗證連結"));
+                .orElseThrow(() -> new ServiceException(ErrorCode.INVALID_VERIFICATION_URL));
         if (member == null) {
-            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND"));
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.MEMBER_NOT_FOUND));
         }
 
         String encryptedPassword = passwordEncoder.encode(newPassword);
@@ -256,7 +257,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
         Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(userDetails, memberMainRepository);
         if (member.isEmpty()) {
-            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "MEMBER_NOT_FOUND"));
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.MEMBER_NOT_FOUND));
         }
         String newPassword = (passwordEncoder.encode(req.getNewPassword()));
         member.get().setPassword(newPassword);
@@ -320,12 +321,12 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         String email = jwtUtil.extractUsername(token);
 
         if (email == null || email.isEmpty()) {
-            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "INVALID_TOKEN"));
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.TOKEN_INVALID));
         }
 
         // **檢查 Token 是否過期**
         if (jwtUtil.isTokenExpired(token)) {
-            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "TOKEN_EXPIRED"));
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.TOKEN_EXPIRED));
         }
 
         return null;
@@ -339,7 +340,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
         if (refreshToken == null || !jwtUtil.validateRefreshToken(refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponseTemplate.fail(401, "INVALID_REFRESH_TOKEN"));
+                    .body(ApiResponseTemplate.fail(401, ErrorCode.INVALID_FRESH_TOKEN));
         }
 
         // **解析 Refresh Token 取得 Email**
@@ -347,7 +348,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
         // **查詢用戶**
         MemberMainEntity member = memberMainRepository.findByEmail(email)
-                .orElseThrow(() -> new ServiceException("MEMBER_NOT_FOUND"));
+                .orElseThrow(() -> new ServiceException(ErrorCode.MEMBER_NOT_FOUND));
 
         // **重新產生新的 Access Token**
         UserDetails userDetails = memberDetailsService.loadUserByUsername(email);

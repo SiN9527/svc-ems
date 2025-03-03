@@ -2,6 +2,7 @@ package com.svc.ems.config.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svc.ems.dto.base.ApiResponseTemplate;
+import com.svc.ems.enums.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

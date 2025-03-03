@@ -1,32 +1,43 @@
 package com.svc.ems.exception;
 
+import com.svc.ems.enums.ErrorCode;
+
 /**
- * ClassName: com.sweetolive.exhibition_backend.exception.ServiceException
- * Package: com.sweetolive.exhibition_backend.exception
- * Description:
- *
- * @Author 郭庭安
- * @Create 2025/1/23 下午9:04
- * @Version 1.0
+ * 服務異常
  */
 public class ServiceException extends RuntimeException{
-    public ServiceException() {
-        super();
+
+    private final ErrorCode errorCode;
+
+    public ServiceException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
     }
 
-    public ServiceException(String message) {
+    public ServiceException(ErrorCode errorCode, String customMessage) {
+        super(customMessage);
+        this.errorCode = errorCode;
+    }
+
+
+
+    public ServiceException(String message, ErrorCode errorCode) {
         super(message);
+        this.errorCode = errorCode;
     }
 
-    public ServiceException(String message, Throwable cause) {
+    public ServiceException(String message, Throwable cause, ErrorCode errorCode) {
         super(message, cause);
+        this.errorCode = errorCode;
     }
 
-    public ServiceException(Throwable cause) {
+    public ServiceException(Throwable cause, ErrorCode errorCode) {
         super(cause);
+        this.errorCode = errorCode;
     }
 
-    protected ServiceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected ServiceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace, ErrorCode errorCode) {
         super(message, cause, enableSuppression, writableStackTrace);
+        this.errorCode = errorCode;
     }
 }

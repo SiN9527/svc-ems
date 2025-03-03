@@ -2,7 +2,7 @@ package com.svc.ems.config;
 
 
 import com.svc.ems.dto.base.ApiResponseTemplate;
-import com.svc.ems.exception.AdminDuplicatedException;
+import com.svc.ems.enums.ErrorCode;
 import com.svc.ems.exception.AdminNotFoundException;
 import com.svc.ems.exception.ServiceException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,10 +47,7 @@ public class GlobalExceptionHandler {
     public ApiResponseTemplate<Void> handleServiceException(ServiceException e) {
         log.error("ServiceException: {}", e.getMessage(), e); // **記錄異常日誌**
 
-        if (e instanceof AdminDuplicatedException) {
-            // **管理員重複錯誤**
-            return buildErrorResponse(HttpStatus.BAD_REQUEST, "ADMIN_DUPLICATED");
-        } else if (e instanceof AdminNotFoundException) {
+    if (e instanceof AdminNotFoundException) {
             // **找不到管理員錯誤**
             return buildErrorResponse(HttpStatus.NOT_FOUND, "ADMIN_NOT_FOUND");
         }
@@ -84,7 +81,7 @@ public class GlobalExceptionHandler {
         return ApiResponseTemplate.<Void>builder()
                 .httpStatusCode(status.value())  // **HTTP 狀態碼**
                 .success(false)                // **API 請求是否成功**
-                .errorCode(status.getReasonPhrase()) // **錯誤代碼**
+                .errorCode(ErrorCode.INTERNAL_SERVER_ERROR) // **錯誤代碼**
                 .message(message)              // **錯誤訊息**
                 .path(request.getRequestURI())   // **請求的 API 路徑**
                 .build();

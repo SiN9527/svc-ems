@@ -7,6 +7,7 @@ import com.svc.ems.dto.auth.LoginRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.MemberMainEntity;
 import com.svc.ems.entity.AdminMainEntity;
+import com.svc.ems.enums.ErrorCode;
 import com.svc.ems.repo.MemberMainRepository;
 import com.svc.ems.repo.AdminMainRepository;
 import com.svc.ems.svc.auth.JwtAuthLoginService;
@@ -60,7 +61,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         boolean isMember = memberDetailsService.memberExists(email);
 
         if ( !isMember) {
-            return ResponseEntity.ok(ApiResponseTemplate.fail(400,  "Invalid email or password."));
+            return ResponseEntity.ok(ApiResponseTemplate.fail(400, ErrorCode.INVALID_EMAIL_OR_PASSWORD));
         }
         UserDetails userDetails;
         String type;
@@ -74,16 +75,16 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
 
             // **比對密碼解密**
             if (!passwordEncoder.matches(password, storedEncryptedPassword)) {
-                ResponseEntity.ok(ApiResponseTemplate.fail(400,"Invalid email or password."));};
+                ResponseEntity.ok(ApiResponseTemplate.fail(400,ErrorCode.INVALID_EMAIL_OR_PASSWORD));};
             // 取得登入 IP 與 User-Agent
 
         } catch (Exception e) {
             if (e.getMessage().equals("Not found with email")) {
-              return ResponseEntity.ok(ApiResponseTemplate.fail(400,  "Invalid email or password."));
+              return ResponseEntity.ok(ApiResponseTemplate.fail(400,  ErrorCode.INVALID_EMAIL_OR_PASSWORD));
             } else if (e.getMessage().equals("Account is disabled")) {
-                return ResponseEntity.ok(ApiResponseTemplate.fail(400, "Account is disabled."));
+                return ResponseEntity.ok(ApiResponseTemplate.fail(400, ErrorCode.ACCOUNT_IS_DISABLED));
             } else {
-                return ResponseEntity.ok(ApiResponseTemplate.fail(400, "Something going wrong."));
+                return ResponseEntity.ok(ApiResponseTemplate.fail(400, ErrorCode.SOMETHING_GOING_WRONG));
             }
         }
 
@@ -129,7 +130,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
 
 
         if (!isAdmin) {
-            return ResponseEntity.ok(ApiResponseTemplate.fail(400,  "Invalid email or password."));
+            return ResponseEntity.ok(ApiResponseTemplate.fail(400,  ErrorCode.INVALID_EMAIL_OR_PASSWORD));
         }
         UserDetails userDetails;
         String type;
@@ -142,20 +143,20 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
                 storedEncryptedPassword = user.getPassword(); // **取出加密後的密碼**
             // **比對密碼解密**
             if (!passwordEncoder.matches(password, storedEncryptedPassword)) {
-                ResponseEntity.ok(ApiResponseTemplate.fail(400,"Invalid email or password."));};
+                ResponseEntity.ok(ApiResponseTemplate.fail(400,ErrorCode.INVALID_EMAIL_OR_PASSWORD));};
             // 取得登入 IP 與 User-Agent
         } catch (Exception e) {
             if (e.getMessage().equals("Not found with email")) {
-                return ResponseEntity.ok(ApiResponseTemplate.fail(400,  "Invalid email or password."));
+                return ResponseEntity.ok(ApiResponseTemplate.fail(400,  ErrorCode.INVALID_EMAIL_OR_PASSWORD));
             } else if (e.getMessage().equals("Account is disabled")) {
-                return ResponseEntity.ok(ApiResponseTemplate.fail(400, "Account is disabled."));
+                return ResponseEntity.ok(ApiResponseTemplate.fail(400, ErrorCode.ACCOUNT_IS_DISABLED));
             } else {
-                return ResponseEntity.ok(ApiResponseTemplate.fail(400, "Something going wrong."));
+                return ResponseEntity.ok(ApiResponseTemplate.fail(400, ErrorCode.SOMETHING_GOING_WRONG));
             }
         }
         // 驗證密碼
         if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-            return ResponseEntity.ok(ApiResponseTemplate.fail(400, "Invalid email or password."));
+            return ResponseEntity.ok(ApiResponseTemplate.fail(400, ErrorCode.INVALID_EMAIL_OR_PASSWORD));
 
         }
 

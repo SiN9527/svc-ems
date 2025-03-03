@@ -1,6 +1,7 @@
 package com.svc.ems.svc.mail.impl;
 
 import com.svc.ems.entity.EmailTemplateEntity;
+import com.svc.ems.enums.ErrorCode;
 import com.svc.ems.exception.ServiceException;
 import com.svc.ems.repo.EmailTemplateRepository;
 import com.svc.ems.svc.mail.EmailService;
@@ -37,7 +38,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
     public EmailTemplateEntity getTemplate(String eventId, String templateType) {
         Optional<EmailTemplateEntity> template = emailTemplateRepository.findByEventIdAndTemplateType(eventId, templateType);
         if (template.isEmpty()) {
-            throw new ServiceException("Email template not found");
+            throw new ServiceException(ErrorCode.EMAIL_TEMPLATE_NOT_FOUND);
         }
         return template.get();
     }

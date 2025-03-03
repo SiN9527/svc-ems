@@ -1,32 +1,25 @@
 package com.svc.ems.exception;
 
+import com.svc.ems.enums.ErrorCode;
+
 /**
- * ClassName: com.sweetolive.exhibition_backend.exception.AdminNotFoundException
- * Package: com.sweetolive.exhibition_backend.exception
- * Description:
- *
- * @Author 郭庭安
- * @Create 2025/1/23 下午9:06
- * @Version 1.0
+ * 管理員找不到異常
  */
 public class AdminNotFoundException extends ServiceException {
+
     public AdminNotFoundException() {
-        super();
+        super("Admin not found", ErrorCode.ADMIN_NOT_FOUND);
     }
 
     public AdminNotFoundException(String message) {
-        super(message);
+        super(message, ErrorCode.ADMIN_NOT_FOUND);
     }
 
     public AdminNotFoundException(String message, Throwable cause) {
-        super(message, cause);
+        super(message, cause, ErrorCode.ADMIN_NOT_FOUND);
     }
 
     public AdminNotFoundException(Throwable cause) {
-        super(cause);
-    }
-
-    protected AdminNotFoundException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
+        super(cause, ErrorCode.ADMIN_NOT_FOUND);
     }
 }

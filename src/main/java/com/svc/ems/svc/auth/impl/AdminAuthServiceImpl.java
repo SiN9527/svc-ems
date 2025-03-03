@@ -6,6 +6,7 @@ import com.svc.ems.config.jwt.JwtUtil;
 import com.svc.ems.dto.auth.AdminRegisterRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.AdminMainEntity;
+import com.svc.ems.enums.ErrorCode;
 import com.svc.ems.repo.AdminMainRepository;
 import com.svc.ems.svc.auth.AdminAuthService;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +55,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         if (adminMainRepository.existsByEmail(req.getEmail())) {
             log.info("User registration failed: Email already exists. Please use another email address.");
             // 使用 ApiResponse.fail() 包裝失敗訊息，再回傳 ResponseEntity
-           return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400,"Email already exists. Please use another email address.")
+           return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400,
+                   ErrorCode.EMAIL_ALREADY_REGISTERED)
             );
 
         }
