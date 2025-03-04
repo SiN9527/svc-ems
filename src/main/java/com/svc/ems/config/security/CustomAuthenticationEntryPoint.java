@@ -2,6 +2,7 @@ package com.svc.ems.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.svc.ems.dto.base.ApiResponseTemplate;
+import com.svc.ems.enums.ErrorCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,7 +38,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         ApiResponseTemplate<Void> errorResponse = ApiResponseTemplate.<Void>builder()
                 .httpStatusCode(HttpStatus.UNAUTHORIZED.value())
-                .errorCode("UNAUTHORIZED")
+                .errorCode(ErrorCode.UNAUTHORIZED)
                 .message(errorMessage)
                 .success(false)
                 .path(request.getRequestURI())
