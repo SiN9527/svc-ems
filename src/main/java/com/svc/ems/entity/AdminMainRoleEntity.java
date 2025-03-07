@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 
 @Data
 @Entity
-@Table(name = "ADMIN_MAIN_ROLE", schema = "db_001")
+@Table(name = "ADMIN_MAIN_ROLE", schema = "ems_001")
 public class AdminMainRoleEntity {
 
     @EmbeddedId

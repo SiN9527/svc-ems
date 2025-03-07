@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "EMAIL_TEMPLATE", schema = "db_001")
+@Table(name = "EMAIL_TEMPLATE", schema = "ems_001")
 @Data
 @Builder
 @IdClass(EmailTemplatePkEntity.class)

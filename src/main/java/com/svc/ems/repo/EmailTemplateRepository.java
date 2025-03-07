@@ -18,4 +18,6 @@ public interface EmailTemplateRepository extends JpaRepository<EmailTemplateEnti
     void deleteByEventIdAndEmailId(String eventId, Integer emailId);
 
     List<EmailTemplateEntity> findByEventId(String eventId);
+
+    void deleteByEmailIdAndEventId(Integer emailId, String eventId);
 }

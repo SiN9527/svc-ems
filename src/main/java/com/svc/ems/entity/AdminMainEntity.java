@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 
 @Data
 @Entity
-@Table(name = "ADMIN_MAIN", schema = "db_001")
+@Table(name = "ADMIN_MAIN", schema = "ems_001")
 public class AdminMainEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 設定自動生成 ID

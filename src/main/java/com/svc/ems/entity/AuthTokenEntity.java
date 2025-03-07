@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 
 @Data
 @Entity
-@Table(name = "AUTH_TOKEN", schema = "db_001")
+@Table(name = "AUTH_TOKEN", schema = "ems_001")
 public class AuthTokenEntity {
     @Id
     @Column(name = "id", nullable = false)

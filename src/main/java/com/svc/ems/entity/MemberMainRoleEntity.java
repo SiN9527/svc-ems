@@ -7,7 +7,7 @@ import lombok.Data;
 import java.sql.Timestamp;
 @Data
 @Entity
-@Table(name = "MEMBER_MAIN_ROLE", schema = "db_001")
+@Table(name = "MEMBER_MAIN_ROLE", schema = "ems_001")
 public class MemberMainRoleEntity {
 
     @EmbeddedId

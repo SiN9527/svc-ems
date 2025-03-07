@@ -10,7 +10,7 @@ import java.time.Instant;
 @Data
 @Entity
 @IdClass(CommonCodePkEntity.class)
-@Table(name = "COMMON_CODE", schema = "db_001")
+@Table(name = "COMMON_CODE", schema = "ems_001")
 public class CommonCodeEntity {
 
     @Id

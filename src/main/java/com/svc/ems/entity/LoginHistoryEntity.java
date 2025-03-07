@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 
 @Data
 @Entity
-@Table(name = "LOGIN_HISTORY", schema = "db_001")
+@Table(name = "LOGIN_HISTORY", schema = "ems_001")
 public class LoginHistoryEntity {
     @Id
     @Column(name = "id", nullable = false)
