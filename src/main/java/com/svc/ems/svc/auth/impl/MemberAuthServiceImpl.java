@@ -369,8 +369,38 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     }
 
     @Override
-    public ResponseEntity<ApiResponseTemplate<?>> memberUpdateProfile() {
-        return null;
+    public ResponseEntity<ApiResponseTemplate<?>> memberUpdateProfile(MemberUpdateRequest req, UserDetails userDetails,HttpServletResponse response) {
+        Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(userDetails, memberMainRepository);
+        if (member.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.MEMBER_NOT_FOUND));
+        }
+
+        req.setMemberId(member.get().getMemberId());
+        req.setEmail(member.get().getEmail());
+        req.setPassword(member.get().getPassword());
+
+
+        MemberMainEntity entity = MapperUtils.map(req, MemberMainEntity.class);
+        entity.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+        entity.setUpdatedBy(userDetails.getUsername());
+        entity.setCreatedBy(member.get().getCreatedBy());
+        entity.setCreatedAt(member.get().getCreatedAt());
+        entity.setEnabled(member.get().getEnabled());
+        entity.setRegistrationDate(member.get().getRegistrationDate());
+
+        memberMainRepository.save(entity);
+
+        // **清除 Cookie**
+        Cookie accessCookie = new Cookie("AUTH_TOKEN", null);
+        clearCookies(accessCookie);
+
+        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", null);
+        clearCookies(refreshCookie);
+
+        response.addCookie(accessCookie);
+        response.addCookie(refreshCookie);
+
+        return ResponseEntity.ok(ApiResponseTemplate.success("Profile updated successfully "));
     }
 
     private void clearCookies(Cookie cookie) {

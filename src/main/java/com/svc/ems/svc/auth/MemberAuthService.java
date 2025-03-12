@@ -32,7 +32,7 @@ public interface MemberAuthService {
     public ResponseEntity<ApiResponseTemplate<?>> memberRefreshToken(String refreshToken, HttpServletResponse response);
 
     // 更新個人資料
-    public ResponseEntity<ApiResponseTemplate<?>> memberUpdateProfile();
+    public ResponseEntity<ApiResponseTemplate<?>> memberUpdateProfile(MemberUpdateRequest req, UserDetails userDetails,HttpServletResponse response);
 
     public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(MemberPwdUpdateRequest req, UserDetails userDetails,HttpServletResponse response);
 

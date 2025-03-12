@@ -1,9 +1,6 @@
 package com.svc.ems.controller;
 
-import com.svc.ems.dto.auth.MemberProfileResponse;
-import com.svc.ems.dto.auth.MemberPwdUpdateRequest;
-import com.svc.ems.dto.auth.MemberRegisterRequest;
-import com.svc.ems.dto.auth.MemberResetPwdRequest;
+import com.svc.ems.dto.auth.*;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.dto.common.CommonCodeList;
 import com.svc.ems.dto.common.CommonCodeReqDTO;
@@ -57,6 +54,14 @@ public class MemberAuthController {
     @Operation(summary = "登入者修改密碼")
     public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(@RequestBody MemberPwdUpdateRequest req, @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
         return memberAuthService.memberUpdatePwd(req, userDetails, response);
+    }
+
+    // 修改密碼
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/updateProfile")
+    @Operation(summary = "登入者修改資料")
+    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(@RequestBody MemberUpdateRequest req, @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
+        return memberAuthService.memberUpdateProfile(req, userDetails, response);
     }
 
     //更新token
