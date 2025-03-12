@@ -181,7 +181,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     @Override
     public ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(MemberPwdUpdateRequest req, UserDetails userDetails) {
 
-        String email = userDetails.getUsername();
+        String email = req.getEmail();
         //  檢查會員是否存在
         if (!memberMainRepository.existsByEmail(email)) {
             return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.MEMBER_NOT_FOUND));
@@ -209,7 +209,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
 
         // **解析 Token**
-        String email = userDetails.getUsername();
+        String email = req.getEmail();
 //        if (email == null || jwtUtil.isTokenExpired(token)) {
 //            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "INVALID_OR_EXPIRED_TOKEN"));
 //        }

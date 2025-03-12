@@ -9,6 +9,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 @Slf4j
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -55,11 +58,14 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendPasswordResetEmail(String email) {
+
         // 1️⃣ 產生密碼重設 Token，30 分鐘有效
         String resetToken = jwtUtil.generatePasswordResetToken(email);
+        // 2️⃣ 對 email 進行 URL 編碼
+        String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
 
-        // 2️⃣ 準備密碼重設連結
-        String resetLink = "http://localhost:5173/verify?token=" + resetToken;
+        // 3️⃣ 準備密碼重設連結，同時包含 token 與 email 參數
+        String resetLink = "http://localhost:5173/resetPwd?token=" + resetToken + "&email=" + encodedEmail;
 
         // 3️⃣ 設定信件內容
         String subject = "reset your password";
