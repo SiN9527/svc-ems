@@ -12,9 +12,6 @@ public class MemberResetPwdRequest {
     @JsonProperty("Token")
     private String token;
 
-    @JsonProperty("Email")
-    private String email;
-
     /**
      * 密碼 (必填)
      * - 必須至少 8 碼，包含大小寫與數字

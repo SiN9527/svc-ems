@@ -25,7 +25,6 @@ public class EmailServiceImpl implements EmailService {
     }
 
 
-
     /**
      * 發送會員註冊驗證信
      *
@@ -65,7 +64,7 @@ public class EmailServiceImpl implements EmailService {
         String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
 
         // 3️⃣ 準備密碼重設連結，同時包含 token 與 email 參數
-        String resetLink = "http://localhost:5173/resetPwd?token=" + resetToken + "&email=" + encodedEmail;
+        String resetLink = "http://localhost:5173/resetPwd?token=" + resetToken;
 
         // 3️⃣ 設定信件內容
         String subject = "reset your password";

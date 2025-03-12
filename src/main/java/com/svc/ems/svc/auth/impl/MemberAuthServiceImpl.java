@@ -127,7 +127,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     @Override
     public ResponseEntity<ApiResponseTemplate<String>> verifyEmail(@RequestBody Map<String, String> tokenMap, HttpServletResponse response) {
 
-       String token = tokenMap.get("token");
+        String token = tokenMap.get("token");
         // **解析 Token**
         String email = jwtUtil.extractUsername(token);
         if (email == null || jwtUtil.isTokenExpired(token)) {
@@ -199,6 +199,12 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
 
         String token = req.getToken();
+        String email = jwtUtil.extractUsername(token);
+        log.info(email);
+        // 檢查 token 是否正確
+        if (email == null || jwtUtil.isTokenExpired(token)) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.TOKEN_INVALID));
+        }
 
         String newPassword = req.getPassword();
 
@@ -206,13 +212,6 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         if (!isValidPassword(newPassword)) {
             return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.PASSWORD_TOO_WEAK));
         }
-
-
-        // **解析 Token**
-        String email = req.getEmail();
-//        if (email == null || jwtUtil.isTokenExpired(token)) {
-//            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "INVALID_OR_EXPIRED_TOKEN"));
-//        }
 
 
         //  查找會員
@@ -252,7 +251,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     }
 
     @Override
-    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(MemberPwdUpdateRequest req, UserDetails userDetails,HttpServletResponse response) {
+    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(MemberPwdUpdateRequest req, UserDetails userDetails, HttpServletResponse response) {
 
 
         Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(userDetails, memberMainRepository);
