@@ -42,6 +42,18 @@ public class EventEntity {
     @Column(name = "event_end_date", nullable = false)
     private Timestamp eventEndDate; // 活動結束時間
 
+    @Column(name = "registration_start_date")
+    private Timestamp registrationStartDate; // 報名開始時間
+
+    @Column(name = "registration_end_date")
+    private Timestamp registrationEndDate; // 報名截止時間
+
+    @Column(name = "submission_start_date")
+    private Timestamp submissionStartDate; // 投稿開始時間
+
+    @Column(name = "submission_end_date")
+    private Timestamp submissionEndDate; // 投稿截止時間
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private Timestamp createdAt = Timestamp.from(Instant.now()); // 建立時間 (不可更新)
