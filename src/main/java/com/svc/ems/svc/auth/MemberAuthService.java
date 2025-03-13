@@ -27,7 +27,6 @@ public interface MemberAuthService {
     // 登出
     public ResponseEntity<ApiResponseTemplate<?>> memberLogout(HttpServletResponse response);
 
-
     // 更新Token
     public ResponseEntity<ApiResponseTemplate<?>> memberRefreshToken(String refreshToken, HttpServletResponse response);
 
