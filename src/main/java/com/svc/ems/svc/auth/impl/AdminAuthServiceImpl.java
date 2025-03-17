@@ -67,6 +67,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         user.setEnabled(false); // 預設帳號未啟用
         // 密碼加密處理
         user.setPassword(passwordEncoder.encode(req.getPassword()));
+        user.setEventId("All");
         // 儲存使用者資料到資料庫
         adminMainRepository.save(user);
         logger.info("User registered successfully: {}", user.getEmail());
