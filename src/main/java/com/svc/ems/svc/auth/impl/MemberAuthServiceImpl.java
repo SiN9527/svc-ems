@@ -389,15 +389,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
         memberMainRepository.save(entity);
 
-        // **清除 Cookie**
-        Cookie accessCookie = new Cookie("AUTH_TOKEN", null);
-        clearCookies(accessCookie);
-
-        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", null);
-        clearCookies(refreshCookie);
-
-        response.addCookie(accessCookie);
-        response.addCookie(refreshCookie);
+       
 
         return ResponseEntity.ok(ApiResponseTemplate.success("Profile updated successfully "));
     }
