@@ -11,8 +11,11 @@ import lombok.Data;
 public class MemberUpdateRequest {
 
 
-
+    @JsonProperty("MemberId")
     private String memberId;
+
+    @JsonProperty("EventId")
+    private String eventId;
 
     /**
      * 信箱 (必填)
