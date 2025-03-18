@@ -27,6 +27,9 @@ public class AdminMainEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Column(name = "event_id", length = 50, nullable = false)
+    private String eventId; // UUID 格式的活動 ID
+
     @Size(max = 50)
     @NotNull
     @Column(name = "user_name", nullable = false, length = 50)
