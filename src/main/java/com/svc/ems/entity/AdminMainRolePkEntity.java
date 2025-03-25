@@ -17,15 +17,15 @@ public class AdminMainRolePkEntity implements Serializable {
     @Size(max = 50)
     @NotNull
     @Column(name = "user_id", nullable = false, length = 50)
-    private String userId;
+    private long userId;
 
     @NotNull
     @Column(name = "role_id", nullable = false)
-    private Long roleId;
+    private long roleId;
 
     public AdminMainRolePkEntity() {}
 
-    public AdminMainRolePkEntity(String userId, Long roleId) {
+    public AdminMainRolePkEntity(long userId, Long roleId) {
         this.userId = userId;
         this.roleId = roleId;
     }

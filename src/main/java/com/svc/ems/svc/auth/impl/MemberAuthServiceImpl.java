@@ -389,7 +389,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
         memberMainRepository.save(entity);
 
-       
+
 
         return ResponseEntity.ok(ApiResponseTemplate.success("Profile updated successfully "));
     }
