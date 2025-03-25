@@ -49,7 +49,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
      * @return 統一格式的 ApiResponse 物件，payload 為成功訊息
      */
 
-    public ResponseEntity<ApiResponseTemplate<?>> userRegister(@RequestBody AdminRegisterRequest req) {
+    public ResponseEntity<ApiResponseTemplate<?>> adminRegister(@RequestBody AdminRegisterRequest req) {
 
 
         if (adminMainRepository.existsByEmail(req.getEmail())) {
@@ -73,6 +73,51 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         logger.info("User registered successfully: {}", user.getEmail());
         // 使用 ApiResponse.success() 包裝成功訊息，再回傳 ResponseEntity
         return ResponseEntity.ok(ApiResponseTemplate.success("User registered successfully."));
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> adminLogin(AdminRegisterRequest req) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> adminLogout() {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> adminRefreshToken(String refreshToken) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> adminUpdateProfile(AdminRegisterRequest req) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> adminGetMemberList(AdminRegisterRequest req) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> adminGetMemberProfile(AdminRegisterRequest req) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> adminUpdateMemberProfile(AdminRegisterRequest req) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> adminDeleteMemberProfile(AdminRegisterRequest req) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> adminUpdatePwd(AdminRegisterRequest req) {
+        return null;
     }
 
 
