@@ -7,6 +7,7 @@ import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @Entity
@@ -14,8 +15,8 @@ import java.sql.Timestamp;
 public class AdminMainEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 設定自動生成 ID
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "admin_id", nullable = false)
+    private Long adminId;
 
     @Size(max = 100)
     @NotNull
@@ -59,6 +60,7 @@ public class AdminMainEntity {
 
     @Column(name = "updated_at")
     private Timestamp updatedAt;
+
 
     @PrePersist
     protected void onCreate() {

@@ -1,5 +1,6 @@
 package com.svc.ems.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Data;
 
@@ -11,9 +12,7 @@ public class AdminEventRolePkEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 
-
-    private long emailId;
-
+    private long adminId;
 
     private String eventId;
 

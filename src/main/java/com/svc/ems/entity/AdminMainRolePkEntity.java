@@ -16,8 +16,8 @@ public class AdminMainRolePkEntity implements Serializable {
 
     @Size(max = 50)
     @NotNull
-    @Column(name = "user_id", nullable = false, length = 50)
-    private long userId;
+    @Column(name = "admin_id", nullable = false)
+    private Long adminId;
 
     @NotNull
     @Column(name = "role_id", nullable = false)
@@ -25,8 +25,8 @@ public class AdminMainRolePkEntity implements Serializable {
 
     public AdminMainRolePkEntity() {}
 
-    public AdminMainRolePkEntity(long userId, Long roleId) {
-        this.userId = userId;
+    public AdminMainRolePkEntity(long adminId, Long roleId) {
+        this.adminId = adminId;
         this.roleId = roleId;
     }
 

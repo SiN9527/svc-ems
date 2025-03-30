@@ -3,6 +3,7 @@ package com.svc.ems.svc.auth.impl;
 import com.svc.ems.config.jwt.JwtAdminDetailsService;
 import com.svc.ems.config.jwt.JwtMemberDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
+import com.svc.ems.dto.auth.AdminLoginResponse;
 import com.svc.ems.dto.auth.LoginRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.MemberMainEntity;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,19 +32,19 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
     // 使用 LoggerFactory 建立 Logger 實例，傳入當前類別作為參數
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthLoginServiceImpl.class);
     private final JwtUtil jwtUtil;
-    private final JwtAdminDetailsService userDetailsService;
-    private final JwtMemberDetailsService memberDetailsService;
+    private final  JwtAdminDetailsService adminDetailsService;
+    private final   JwtMemberDetailsService memberDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final AdminMainRepository adminMainRepository;
     private final MemberMainRepository memberRepository;
 
     public JwtAuthLoginServiceImpl(JwtUtil jwtUtil,
-                                   JwtAdminDetailsService userDetailsService,
-                                   JwtMemberDetailsService memberDetailsService,
+                                   @Qualifier("jwtAdminDetailsService")  JwtAdminDetailsService adminDetailsService,
+                                   @Qualifier("jwtMemberDetailsService") JwtMemberDetailsService memberDetailsService,
                                    PasswordEncoder passwordEncoder,
                                    AdminMainRepository userMainRepository, MemberMainRepository memberRepository) {
         this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService;
+        this.adminDetailsService = adminDetailsService;
         this.memberDetailsService = memberDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.adminMainRepository = userMainRepository;
@@ -112,6 +114,11 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         response.addCookie(accessCookie);
         response.addCookie(refreshCookie);
 
+        AdminLoginResponse adminLoginResponse = new AdminLoginResponse();
+        adminLoginResponse.setRoles(roles);
+        adminLoginResponse.setUserName(email);
+
+
         // 6️⃣ 回應成功消息
         return ResponseEntity.ok(ApiResponseTemplate.success("member login success"));
 
@@ -126,7 +133,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
 
         logger.info("login email: {}", email);
         // 確定身份類型（USER 或 MEMBER）
-        boolean isAdmin = userDetailsService.userExists(email);
+        boolean isAdmin = adminDetailsService. adminExists(email);
 
 
         if (!isAdmin) {
@@ -138,7 +145,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         try {
 
                 AdminMainEntity user = adminMainRepository.findByEmail(email).orElseThrow();
-                userDetails = userDetailsService.loadUserByUsername(email);
+                userDetails = adminDetailsService.loadUserByUsername(email);
                 type = "ADMIN";
                 storedEncryptedPassword = user.getPassword(); // **取出加密後的密碼**
             // **比對密碼解密**

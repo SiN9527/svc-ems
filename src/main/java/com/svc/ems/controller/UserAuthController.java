@@ -36,10 +36,10 @@ public class UserAuthController {
         return jwtAuthLoginService.adminAuthLogin(req,response);
     }
 
-    @PostMapping("/register")
-    @Operation(summary = "用戶註冊")
-    public ResponseEntity<ApiResponseTemplate<?>> adminRegister(@RequestBody AdminRegisterRequest req) {
-        // 返回 JWT 和其他信息
-        return adminAuthService.userRegister(req);
-    }
+//    @PostMapping("/register")
+//    @Operation(summary = "用戶註冊")
+//    public ResponseEntity<ApiResponseTemplate<?>> adminRegister(@RequestBody AdminRegisterRequest req) {
+//        // 返回 JWT 和其他信息
+//        return adminAuthService.userRegister(req);
+//    }
 }

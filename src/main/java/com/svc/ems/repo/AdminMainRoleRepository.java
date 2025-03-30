@@ -14,8 +14,8 @@ public interface AdminMainRoleRepository extends JpaRepository<AdminMainRoleEnti
 
     @Query("SELECT r FROM AdminRoleEntity r " +
             "JOIN AdminMainRoleEntity ur ON r.id = ur.pk.roleId " + // 直接使用 ur.roleId
-            "WHERE ur.pk.userId = :userId") // 直接使用 ur.userId
-    List<AdminRoleEntity> findRolesByUserId(@Param("userId") long userId);
+            "WHERE ur.pk.adminId = :adminId") // 直接使用 ur.adminId
+    List<AdminRoleEntity> findRolesByAdminId(@Param("adminId") long userId);
 
 
 }

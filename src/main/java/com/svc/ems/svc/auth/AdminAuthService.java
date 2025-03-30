@@ -1,8 +1,12 @@
 package com.svc.ems.svc.auth;
 
+import com.svc.ems.dto.auth.AdminMemberListRequest;
+import com.svc.ems.dto.auth.AdminMemberProfileResponse;
 import com.svc.ems.dto.auth.AdminRegisterRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 public interface AdminAuthService {
 
@@ -19,7 +23,7 @@ public interface AdminAuthService {
     public ResponseEntity<ApiResponseTemplate<?>> adminUpdateProfile(AdminRegisterRequest req);
 
 
-    public ResponseEntity<ApiResponseTemplate<?>> adminGetMemberList(AdminRegisterRequest req);
+    public  ResponseEntity<ApiResponseTemplate<List<AdminMemberProfileResponse>>> adminGetMemberList(AdminMemberListRequest req);
 
     public ResponseEntity<ApiResponseTemplate<?>> adminGetMemberProfile(AdminRegisterRequest req);
 

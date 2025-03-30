@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminLoginResponse {
+public class MemberLoginResponse {
 
 
 
@@ -20,8 +20,8 @@ public class AdminLoginResponse {
     @JsonProperty("UserName")
     private String userName; // 用戶名或 email
 
-    @JsonProperty("AdminId")
-    private Long adminId; // 用戶 ID (可選)
+    @JsonProperty("MemberId")
+    private String memberId; // 用戶 ID (可選)
 
     @JsonProperty("EventId")
     private String eventId; // 活動 ID (可選)
@@ -29,8 +29,5 @@ public class AdminLoginResponse {
     @JsonProperty("EventName")
     private String eventName; // 活動名稱 (可選)
 
-    public AdminLoginResponse( List<String> roles) {
 
-        this.roles = roles;
-    }
 }

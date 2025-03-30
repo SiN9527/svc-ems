@@ -52,7 +52,7 @@ public class BaseServiceImpl implements BaseService {
         String password = req.getPassword();
 
         // 確定身份類型（USER 或 MEMBER）
-        boolean isUser = userDetailsService.userExists(email);
+        boolean isUser = userDetailsService. adminExists(email);
         boolean isMember = memberDetailsService.memberExists(email);
 
         if (!isUser && !isMember) {

@@ -16,8 +16,8 @@ public class LoginHistoryEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "admin_id")
+    private Long adminId;
 
     @Column(name = "member_id")
     private Long memberId;
@@ -35,5 +35,9 @@ public class LoginHistoryEntity {
     @Lob
     @Column(name = "user_agent", nullable = false)
     private String userAgent;
+
+    @ManyToOne
+    @JoinColumn(name = "member_id", insertable = false, updatable = false)
+    private MemberMainEntity member;
 
 }

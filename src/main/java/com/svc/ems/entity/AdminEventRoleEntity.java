@@ -19,8 +19,8 @@ import java.sql.Timestamp;
 public class AdminEventRoleEntity {
 
     @Id
-    @Column(name = "user_id", nullable = false)
-    private long emailId;
+    @Column(name = "admin_id", nullable = false)
+    private long adminId;
 
     @Id
     @Column(name = "event_id", nullable = false)

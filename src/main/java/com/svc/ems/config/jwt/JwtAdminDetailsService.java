@@ -42,7 +42,7 @@ public class JwtAdminDetailsService implements UserDetailsService {
         }
 
         // 透過關聯表查詢該使用者的角色
-        List<AdminRoleEntity> roles = adminMainRoleRepository.findRolesByUserId(admin.getUserId());
+        List<AdminRoleEntity> roles = adminMainRoleRepository.findRolesByAdminId(admin.getAdminId());
 
         // 轉換成 Spring Security 需要的角色格式
         List<GrantedAuthority> authorities = roles.stream()
@@ -53,7 +53,8 @@ public class JwtAdminDetailsService implements UserDetailsService {
         return new JwtAdminDetails(admin, authorities);
     }
 
-   public boolean userExists(String email) {
+   public boolean  adminExists(String email) {
         return adminMainRepository.existsByEmail(email);
     }
 }
+
