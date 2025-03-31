@@ -1,5 +1,6 @@
 package com.svc.ems.svc.auth.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.svc.ems.config.jwt.JwtAdminDetailsService;
 import com.svc.ems.config.jwt.JwtMemberDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
@@ -110,7 +111,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     public  ResponseEntity<ApiResponseTemplate<List<AdminMemberProfileResponse>>> adminGetMemberList(AdminMemberListRequest req) {
 
         String account = SecurityContextHolder.getContext().getAuthentication().getName();
-log.info("%%%%%%%%%%%%%55"+account);
+        log.info("%%%%%%%%%%%%%"+ JSON.toJSONString(SecurityContextHolder.getContext().getAuthentication(),true));
+       log.info("%%%%%%%%%%%%%"+account);
         // 驗證管理員是否有對應活動的權限
         Optional<AdminEventEntity> adminEventOpt = adminEventRepository.findByAccountAndEventId(account, req.getEventId());
 

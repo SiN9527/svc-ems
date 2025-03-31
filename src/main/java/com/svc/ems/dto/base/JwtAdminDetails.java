@@ -32,7 +32,7 @@ public class JwtAdminDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return userMain.getUserName();
+        return userMain.getAccount();
     }
 
 
