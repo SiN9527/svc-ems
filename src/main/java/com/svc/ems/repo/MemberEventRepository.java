@@ -13,4 +13,8 @@ public interface MemberEventRepository extends JpaRepository<MemberEventEntity, 
 
     @Query("SELECT m.memberId FROM MemberEventEntity m WHERE m.eventId = :eventId")
     List<String> findMemberIdsByEventId(String eventId);
+
+
+
+    void deleteByMemberIdAndEventId(String memberId, String eventId);
 }

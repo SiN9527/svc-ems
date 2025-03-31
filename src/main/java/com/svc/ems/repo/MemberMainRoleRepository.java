@@ -17,4 +17,7 @@ public interface MemberMainRoleRepository extends JpaRepository<MemberMainRoleEn
             "JOIN MemberMainRoleEntity mr ON m.id = mr.pk.roleId " + // 直接使用 ur.roleId
             "WHERE mr.pk.memberId = :memberId") // 直接使用 ur.userId
     List<MemberRoleEntity> findRolesByMemberId(@Param("memberId") String memberId);
+
+
+    void deleteByPk_MemberId(String memberId);
 }

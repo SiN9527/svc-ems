@@ -4,18 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.svc.ems.config.jwt.JwtAdminDetailsService;
 import com.svc.ems.config.jwt.JwtMemberDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
-import com.svc.ems.dto.auth.AdminMemberListRequest;
-import com.svc.ems.dto.auth.AdminMemberProfileResponse;
-import com.svc.ems.dto.auth.AdminRegisterRequest;
+import com.svc.ems.dto.auth.*;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.AdminEventEntity;
 import com.svc.ems.entity.AdminMainEntity;
 import com.svc.ems.entity.MemberMainEntity;
 import com.svc.ems.enums.ErrorCode;
-import com.svc.ems.repo.AdminEventRepository;
-import com.svc.ems.repo.AdminMainRepository;
-import com.svc.ems.repo.MemberEventRepository;
-import com.svc.ems.repo.MemberMainRepository;
+import com.svc.ems.repo.*;
 import com.svc.ems.svc.auth.AdminAuthService;
 import com.svc.ems.utils.MapperUtils;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +22,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -50,6 +47,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 //    private final EventRepository eventRepository;
     private final MemberMainRepository memberMainRepository;
     private final MemberEventRepository memberEventRepository;
+    private final MemberMainRoleRepository memberMainRoleRepository;
 
 
 
@@ -111,8 +109,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     public  ResponseEntity<ApiResponseTemplate<List<AdminMemberProfileResponse>>> adminGetMemberList(AdminMemberListRequest req) {
 
         String account = SecurityContextHolder.getContext().getAuthentication().getName();
-        log.info("%%%%%%%%%%%%%"+ JSON.toJSONString(SecurityContextHolder.getContext().getAuthentication(),true));
-       log.info("%%%%%%%%%%%%%"+account);
+        log.info("Admin get member list: {}", account);
         // 驗證管理員是否有對應活動的權限
         Optional<AdminEventEntity> adminEventOpt = adminEventRepository.findByAccountAndEventId(account, req.getEventId());
 
@@ -141,19 +138,85 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         return null;
     }
 
-    @Override
-    public ResponseEntity<ApiResponseTemplate<?>> adminUpdateMemberProfile(AdminRegisterRequest req) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<ApiResponseTemplate<?>> adminDeleteMemberProfile(AdminRegisterRequest req) {
-        return null;
-    }
 
     @Override
     public ResponseEntity<ApiResponseTemplate<?>> adminUpdatePwd(AdminRegisterRequest req) {
         return null;
+    }
+
+    /**
+     * 編輯會員資訊
+     */
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponseTemplate<String>> adminUpdateMemberProfile(AdminMemberUpdateRequest req) {
+
+        String account = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // 驗證管理員是否有對應活動的權限
+        Optional<AdminEventEntity> adminEventOpt = adminEventRepository.findByAccountAndEventId(account, req.getEventId());
+
+        if (adminEventOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponseTemplate.fail(403, "You do not have access to this event."));
+        }
+
+        MemberMainEntity member = memberMainRepository.findById(req.getMemberId()).orElse(null);
+        if (member == null) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, ErrorCode.MEMBER_NOT_FOUND));
+        }
+
+
+        req.setMemberId(member.getMemberId());
+        req.setEmail(member.getEmail());
+        req.setPassword(member.getPassword());
+
+
+        MemberMainEntity entity = MapperUtils.map(req, MemberMainEntity.class);
+        entity.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+        entity.setUpdatedBy(account);
+        entity.setCreatedBy(member.getCreatedBy());
+        entity.setCreatedAt(member.getCreatedAt());
+        entity.setEnabled(member.getEnabled());
+        entity.setRegistrationDate(member.getRegistrationDate());
+
+        memberMainRepository.save(entity);
+
+
+
+        return ResponseEntity.ok(ApiResponseTemplate.success("Profile updated successfully "));
+    }
+
+    /**
+     * 刪除會員
+     */
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponseTemplate<String>> adminDeleteMemberProfile(AdminMemberDeleteRequest req) {
+
+        String memberId = req.getMemberId();
+        String eventId = req.getEventId();
+        String account = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // 驗證管理員是否有對應活動的權限
+        Optional<AdminEventEntity> adminEventOpt = adminEventRepository.findByAccountAndEventId(account, req.getEventId());
+
+        if (adminEventOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponseTemplate.fail(403, "You do not have access to this event."));
+        }
+
+        MemberMainEntity member = memberMainRepository.findById(memberId).orElse(null);
+        if (member == null) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, ErrorCode.MEMBER_NOT_FOUND));
+        }
+
+        // 刪除關聯表再刪主資料
+        memberEventRepository.deleteByMemberIdAndEventId(memberId , eventId);
+        memberMainRoleRepository.deleteByPk_MemberId(memberId);
+        memberMainRepository.deleteById(memberId);
+
+        return ResponseEntity.ok(ApiResponseTemplate.success("會員資料刪除成功"));
     }
 
 
@@ -202,56 +265,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 //        return ResponseEntity.ok(ApiResponseTemplate.success("取得會員資料成功", response));
 //    }
 //
-//    /**
-//     * 編輯會員資訊
-//     */
-//    @Override
-//    @Transactional
-//    public ResponseEntity<ApiResponseTemplate<?>> adminUpdateMemberProfile(String adminId, String eventId, AdminMemberUpdateRequest req) {
-//
-//        boolean isAuthorized = adminMainEventRepository.existsByAdminIdAndEventId(adminId, eventId);
-//        if (!isAuthorized) {
-//            return ResponseEntity.status(403).body(ApiResponseTemplate.fail(403, "FORBIDDEN", "無權限編輯會員"));
-//        }
-//
-//        MemberMainEntity member = memberMainRepository.findById(req.getMemberId()).orElse(null);
-//        if (member == null) {
-//            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND", "找不到會員"));
-//        }
-//
-//        // 更新欄位
-//        member.setUserName(req.getUserName());
-//        member.setEmail(req.getEmail());
-//        member.setTitle(req.getTitle());
-//        member.setPhone(req.getPhone());
-//        memberMainRepository.save(member);
-//
-//        return ResponseEntity.ok(ApiResponseTemplate.success("會員資料更新成功"));
-//    }
-//
-//    /**
-//     * 刪除會員
-//     */
-//    @Override
-//    @Transactional
-//    public ResponseEntity<ApiResponseTemplate<?>> adminDeleteMemberProfile(String adminId, String eventId, String memberId) {
-//
-//        boolean isAuthorized = adminMainEventRepository.existsByAdminIdAndEventId(adminId, eventId);
-//        if (!isAuthorized) {
-//            return ResponseEntity.status(403).body(ApiResponseTemplate.fail(403, "FORBIDDEN", "無權限刪除會員"));
-//        }
-//
-//        if (!memberMainRepository.existsById(memberId)) {
-//            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(404, "MEMBER_NOT_FOUND", "找不到會員"));
-//        }
-//
-//        // 刪除關聯表再刪主資料
-//        memberMainEventRepository.deleteByMemberIdAndEventId(memberId, eventId);
-//        memberMainRepository.deleteById(memberId);
-//
-//        return ResponseEntity.ok(ApiResponseTemplate.success("會員資料刪除成功"));
-//    }
-//
+
+
 //
 //
 //
