@@ -33,10 +33,11 @@ public enum ErrorCode {
     INVALID_CREDENTIALS("E08", "Invalid email or password.", 400),
     INVALID_VERIFICATION_CODE("E09", "Invalid verification code.", 400),
     INVALID_VERIFICATION_URL("E10", "Invalid verification URL.", 400),
-    EMAIL_ALREADY_REGISTERED("E11", "Email is already registered.", 400),
-    EMAIL_TEMPLATE_NOT_FOUND("E12", "Email template not found.", 400),
-    INVALID_EMAIL_OR_PASSWORD("E13", "Invalid email or password.", 400),
-    ACCOUNT_IS_DISABLED("E14", "Account is disabled.", 400),
+    ACCOUNT_ALREADY_REGISTERED("E11", "Account is already registered.", 400),
+    EMAIL_ALREADY_REGISTERED("E12", "Email is already registered.", 400),
+    EMAIL_TEMPLATE_NOT_FOUND("E13", "Email template not found.", 400),
+    INVALID_EMAIL_OR_PASSWORD("E14", "Invalid email or password.", 400),
+    ACCOUNT_IS_DISABLED("E15", "Account is disabled.", 400),
 
 
 

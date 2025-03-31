@@ -154,6 +154,16 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generateAdminRefreshToken(String account) {
+
+        return Jwts.builder()
+                .setSubject(account)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExpirationMillis)) // **設定 Refresh Token 有效期**
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     public boolean validateRefreshToken(String refreshToken) {
         try {
             Jws<Claims> claimsJws = Jwts.parserBuilder()
@@ -185,6 +195,17 @@ public class JwtUtil {
     public String generateAccessToken(String email, String type, List<String> roles) {
         return Jwts.builder()
                 .setSubject(email) // 設定 Token 的持有者 (用戶名)
+                .claim("roles", roles) // 儲存使用者角色資訊
+                .claim("type", type) // 記錄該 Token 屬於 `USER` 還是 `MEMBER`
+                .setIssuedAt(new Date()) // 設定簽發時間
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMillis)) // 設定過期時間
+                .signWith(secretKey, SignatureAlgorithm.HS256) // 使用 HS256 簽名
+                .compact();
+    }
+
+    public String generateAdminAccessToken(String account, String type, List<String> roles) {
+        return Jwts.builder()
+                .setSubject(account) // 設定 Token 的持有者 (用戶名)
                 .claim("roles", roles) // 儲存使用者角色資訊
                 .claim("type", type) // 記錄該 Token 屬於 `USER` 還是 `MEMBER`
                 .setIssuedAt(new Date()) // 設定簽發時間

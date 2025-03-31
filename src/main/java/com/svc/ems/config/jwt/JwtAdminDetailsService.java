@@ -33,10 +33,10 @@ public class JwtAdminDetailsService implements UserDetailsService {
 
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String account) throws UsernameNotFoundException {
         // 查詢使用者
-        AdminMainEntity admin = adminMainRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Not found with email"));
+        AdminMainEntity admin = adminMainRepository.findByAccount(account)
+                .orElseThrow(() -> new UsernameNotFoundException("Not found with account: " + account));
         if (!admin.getEnabled()) {
             throw new UsernameNotFoundException("Account is disabled");
         }
@@ -53,8 +53,11 @@ public class JwtAdminDetailsService implements UserDetailsService {
         return new JwtAdminDetails(admin, authorities);
     }
 
-   public boolean  adminExists(String email) {
+   public boolean  adminExistsByEmail(String email) {
         return adminMainRepository.existsByEmail(email);
+    }
+    public boolean  adminExistsByAccount(String account) {
+        return adminMainRepository.existsByAccount(account);
     }
 }
 

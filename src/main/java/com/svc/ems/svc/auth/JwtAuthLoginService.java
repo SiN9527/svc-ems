@@ -1,5 +1,6 @@
 package com.svc.ems.svc.auth;
 
+import com.svc.ems.dto.auth.AdminLoginRequest;
 import com.svc.ems.dto.auth.LoginRequest;
 import com.svc.ems.dto.auth.AdminLoginResponse;
 import com.svc.ems.dto.base.ApiResponseTemplate;
@@ -10,7 +11,7 @@ public interface JwtAuthLoginService {
 
     public ResponseEntity<ApiResponseTemplate<String>> memberAuthLogin(LoginRequest req, HttpServletResponse response);
 
-    public ResponseEntity<ApiResponseTemplate<String>> adminAuthLogin(LoginRequest req, HttpServletResponse response);
+    public ResponseEntity<ApiResponseTemplate<String>> adminAuthLogin(AdminLoginRequest req, HttpServletResponse response);
 
 
 }

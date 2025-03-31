@@ -18,5 +18,9 @@ public interface AdminMainRepository extends JpaRepository<AdminMainEntity, Long
 
     Boolean existsByEmail(String email);
 
+    Boolean existsByAccount(String account);
+
     Boolean existsByEmailAndPassword(String email, String password);
+
+    Optional<AdminMainEntity> findByAccount(String account);
 }

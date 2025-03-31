@@ -49,11 +49,13 @@ public class BaseServiceImpl implements BaseService {
     public String getToken(SwaggerUserLoginRequest req) {
 
         String email = req.getEmail();
+        String account = req.getAccount();
         String password = req.getPassword();
-
+        String emailOrAccount = email != null ? email : account;
         // 確定身份類型（USER 或 MEMBER）
-        boolean isUser = userDetailsService. adminExists(email);
-        boolean isMember = memberDetailsService.memberExists(email);
+
+        boolean isUser = userDetailsService.adminExistsByAccount(emailOrAccount);
+        boolean isMember = memberDetailsService.memberExists(emailOrAccount);
 
         if (!isUser && !isMember) {
             return "Invalid email or password.";
@@ -63,10 +65,10 @@ public class BaseServiceImpl implements BaseService {
         String type;
 
         if (isUser) {
-            userDetails = userDetailsService.loadUserByUsername(email);
+            userDetails = userDetailsService.loadUserByUsername(emailOrAccount);
             type = "USER"; // 後台使用者
         } else {
-            userDetails = memberDetailsService.loadUserByUsername(email);
+            userDetails = memberDetailsService.loadUserByUsername(emailOrAccount);
             type = "MEMBER"; // 會員
         }
 
@@ -78,7 +80,8 @@ public class BaseServiceImpl implements BaseService {
         // 生成 JWT
         List<String> roles = new ArrayList<>();
 
-        return jwtUtil.generateToken(email, type, roles);
+
+        return jwtUtil.generateToken(emailOrAccount, type, roles);
 
     }
 

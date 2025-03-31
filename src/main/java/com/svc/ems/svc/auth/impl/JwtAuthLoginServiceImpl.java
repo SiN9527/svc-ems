@@ -3,6 +3,7 @@ package com.svc.ems.svc.auth.impl;
 import com.svc.ems.config.jwt.JwtAdminDetailsService;
 import com.svc.ems.config.jwt.JwtMemberDetailsService;
 import com.svc.ems.config.jwt.JwtUtil;
+import com.svc.ems.dto.auth.AdminLoginRequest;
 import com.svc.ems.dto.auth.AdminLoginResponse;
 import com.svc.ems.dto.auth.LoginRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
@@ -126,14 +127,14 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
 
 
     @Override
-    public  ResponseEntity<ApiResponseTemplate<String>> adminAuthLogin(LoginRequest loginRequest, HttpServletResponse response) {
+    public  ResponseEntity<ApiResponseTemplate<String>> adminAuthLogin(AdminLoginRequest loginRequest, HttpServletResponse response) {
 
-        String email = loginRequest.getEmail();
+        String account = loginRequest.getAccount();
         String password = loginRequest.getPassword();
 
-        logger.info("login email: {}", email);
+        logger.info("login account: {}", account);
         // 確定身份類型（USER 或 MEMBER）
-        boolean isAdmin = adminDetailsService. adminExists(email);
+        boolean isAdmin = adminDetailsService.adminExistsByAccount(account);
 
 
         if (!isAdmin) {
@@ -144,8 +145,8 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         String storedEncryptedPassword;
         try {
 
-                AdminMainEntity user = adminMainRepository.findByEmail(email).orElseThrow();
-                userDetails = adminDetailsService.loadUserByUsername(email);
+                AdminMainEntity user = adminMainRepository.findByAccount(account).orElseThrow();
+                userDetails = adminDetailsService.loadUserByUsername(account);
                 type = "ADMIN";
                 storedEncryptedPassword = user.getPassword(); // **取出加密後的密碼**
             // **比對密碼解密**
@@ -153,7 +154,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
                 ResponseEntity.ok(ApiResponseTemplate.fail(400,ErrorCode.INVALID_EMAIL_OR_PASSWORD));};
             // 取得登入 IP 與 User-Agent
         } catch (Exception e) {
-            if (e.getMessage().equals("Not found with email")) {
+            if (e.getMessage().equals("Not found with account")) {
                 return ResponseEntity.ok(ApiResponseTemplate.fail(400,  ErrorCode.INVALID_EMAIL_OR_PASSWORD));
             } else if (e.getMessage().equals("Account is disabled")) {
                 return ResponseEntity.ok(ApiResponseTemplate.fail(400, ErrorCode.ACCOUNT_IS_DISABLED));
@@ -172,11 +173,12 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(auth -> auth.getAuthority().replace("ROLE_", ""))
                 .toList();
-        String accessToken = jwtUtil.generateAccessToken(email, "ADMIN", roles);
-        String refreshToken = jwtUtil.generateRefreshToken(email);
+        logger.info("login account: {}", account);
+        String accessToken = jwtUtil.generateAdminAccessToken(account, "ADMIN", roles);
+        String refreshToken = jwtUtil.generateAdminRefreshToken(account);
 
         // **存入 HttpOnly Cookie**
-        Cookie accessCookie = new Cookie(type, accessToken);
+        Cookie accessCookie = new Cookie("AUTH_TOKEN", accessToken);
         accessCookie.setHttpOnly(true);
         accessCookie.setSecure(true);
         accessCookie.setPath("/");
@@ -191,7 +193,7 @@ public class JwtAuthLoginServiceImpl implements JwtAuthLoginService {
         response.addCookie(refreshCookie);
 
         // 6️⃣ 回應成功消息
-        return ResponseEntity.ok(ApiResponseTemplate.success("member login success"));
+        return ResponseEntity.ok(ApiResponseTemplate.success("admin login success"));
 
     }
 

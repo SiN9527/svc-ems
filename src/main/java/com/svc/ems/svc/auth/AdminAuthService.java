@@ -12,7 +12,7 @@ public interface AdminAuthService {
 
 
 
-    public ResponseEntity<ApiResponseTemplate<?>> adminRegister(AdminRegisterRequest req);
+    public ResponseEntity<ApiResponseTemplate<String>> adminRegister(AdminRegisterRequest req);
 
     public ResponseEntity<ApiResponseTemplate<?>> adminLogin(AdminRegisterRequest req);
 

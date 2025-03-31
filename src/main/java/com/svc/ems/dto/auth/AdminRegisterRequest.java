@@ -6,9 +6,14 @@ import lombok.Data;
 
 @Data
 public class AdminRegisterRequest {
-    @NotBlank
+
+
     @JsonProperty("Email")
     private String email;
+
+    @NotBlank
+    @JsonProperty("Account")
+    private String account;
 
     @NotBlank
     @JsonProperty("Password")

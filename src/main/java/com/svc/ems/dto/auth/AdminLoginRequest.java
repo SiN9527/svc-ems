@@ -8,8 +8,8 @@ import lombok.Data;
 public class AdminLoginRequest {
 
     @NotBlank
-    @JsonProperty("Email")
-    private String email;
+    @JsonProperty("Account")
+    private String account;
 
     @NotBlank
     @JsonProperty("Password")

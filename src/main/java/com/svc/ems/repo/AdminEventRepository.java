@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface AdminEventRepository extends JpaRepository<AdminEventEntity, AdminEventPkEntity> {
 
 
-    Optional<AdminEventEntity> findByAdminEmailAndEventId(String adminEmail, String eventId);
+    Optional<AdminEventEntity> findByAccountAndEventId(String account, String eventId);
 }

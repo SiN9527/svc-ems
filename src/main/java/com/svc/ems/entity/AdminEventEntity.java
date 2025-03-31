@@ -21,9 +21,9 @@ public class AdminEventEntity {
 
     @Size(max = 50)
     @NotNull
-    @Column(name = "admin_email", nullable = false)
+    @Column(name = "account", nullable = false)
     @Id
-    private String adminEmail;
+    private String account;
 
     @Size(max = 50)
     @NotNull

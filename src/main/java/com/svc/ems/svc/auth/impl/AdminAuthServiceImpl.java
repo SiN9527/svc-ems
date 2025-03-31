@@ -59,20 +59,21 @@ public class AdminAuthServiceImpl implements AdminAuthService {
      * @return 統一格式的 ApiResponse 物件，payload 為成功訊息
      */
 
-    public ResponseEntity<ApiResponseTemplate<?>> adminRegister(@RequestBody AdminRegisterRequest req) {
+    public ResponseEntity<ApiResponseTemplate<String>> adminRegister(@RequestBody AdminRegisterRequest req) {
 
 
-        if (adminMainRepository.existsByEmail(req.getEmail())) {
-            log.info("User registration failed: Email already exists. Please use another email address.");
+        if (adminMainRepository.existsByAccount(req.getAccount())) {
+            log.info("Admin registration failed: Account already exists. Please use another Account.");
             // 使用 ApiResponse.fail() 包裝失敗訊息，再回傳 ResponseEntity
            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400,
-                   ErrorCode.EMAIL_ALREADY_REGISTERED)
+                   ErrorCode.ACCOUNT_ALREADY_REGISTERED)
             );
 
         }
         // 建立新使用者實體，並設定相關欄位
         AdminMainEntity user = new AdminMainEntity();
-        user.setEmail(req.getEmail());
+        user.setAccount(req.getAccount());
+        user.setEmail(req.getEmail()!=null?req.getEmail():"");
         user.setUserName(req.getUserName());
         user.setEnabled(false); // 預設帳號未啟用
         // 密碼加密處理
@@ -80,9 +81,9 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         user.setEventId("All");
         // 儲存使用者資料到資料庫
         adminMainRepository.save(user);
-        logger.info("User registered successfully: {}", user.getEmail());
+        logger.info("Admin registered successfully: {}", user.getEmail());
         // 使用 ApiResponse.success() 包裝成功訊息，再回傳 ResponseEntity
-        return ResponseEntity.ok(ApiResponseTemplate.success("User registered successfully."));
+        return ResponseEntity.ok(ApiResponseTemplate.success("Admin registered successfully."));
     }
 
     @Override
@@ -108,10 +109,11 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     public  ResponseEntity<ApiResponseTemplate<List<AdminMemberProfileResponse>>> adminGetMemberList(AdminMemberListRequest req) {
 
-        String adminEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-
+        String account = SecurityContextHolder.getContext().getAuthentication().getName();
+log.info("%%%%%%%%%%%%%55"+account);
         // 驗證管理員是否有對應活動的權限
-        Optional<AdminEventEntity> adminEventOpt = adminEventRepository.findByAdminEmailAndEventId(adminEmail, req.getEventId());
+        Optional<AdminEventEntity> adminEventOpt = adminEventRepository.findByAccountAndEventId(account, req.getEventId());
+
         if (adminEventOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponseTemplate.fail(403, "You do not have access to this event."));

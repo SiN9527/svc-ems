@@ -30,7 +30,7 @@ public class MemberSysController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "共用登入")
+    @Operation(summary = "會員登入")
     public ResponseEntity<ApiResponseTemplate<String>> authLogin(@RequestBody LoginRequest req, HttpServletResponse response) {
 
         // 返回 JWT 和其他信息

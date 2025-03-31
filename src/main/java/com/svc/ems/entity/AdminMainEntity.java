@@ -18,6 +18,11 @@ public class AdminMainEntity {
     @Column(name = "admin_id", nullable = false)
     private Long adminId;
 
+    @Size(max = 50)
+    @NotNull
+    @Column(name = "account", nullable = false, length = 50)
+    private String account;
+
     @Size(max = 100)
     @NotNull
     @Column(name = "email", nullable = false, length = 100)
