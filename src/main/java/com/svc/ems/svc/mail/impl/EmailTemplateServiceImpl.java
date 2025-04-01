@@ -10,6 +10,7 @@ import com.svc.ems.repo.EmailTemplateRepository;
 import com.svc.ems.repo.EventRepository;
 import com.svc.ems.svc.mail.EmailTemplateService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -113,5 +114,39 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
             templateContent = templateContent.replace("{" + entry.getKey() + "}", entry.getValue());
         }
         return templateContent;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> getTemplatesByEvent(EmailTemplateDTO req) {
+        List<EmailTemplateEntity> templates = emailTemplateRepository.findByEventId(req.getEventId());
+        return ResponseEntity.ok(ApiResponseTemplate.success("Templates loaded.", templates));
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> saveOrUpdate(EmailTemplateDTO req) {
+
+        EmailTemplateEntity entity = EmailTemplateEntity.builder()
+                .emailId(req.getEmailId())
+                .eventId(req.getEventId())
+                .templateType(req.getTemplateType())
+                .subject(req.getSubject())
+                .content(req.getContent())
+                .updateBy(req.getUpdateBy())
+                .updatedAt(new Timestamp(System.currentTimeMillis()))
+                .build();
+
+        if (req.getEmailId() == null) {
+            entity.setCreateBy(req.getUpdateBy());
+            entity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        }
+
+        emailTemplateRepository.save(entity);
+        return ResponseEntity.ok(ApiResponseTemplate.success("Template saved."));
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> deleteTemplate(EmailTemplateDTO req) {
+        emailTemplateRepository.deleteByEventIdAndEmailId(req.getEventId(),req.getEmailId());
+        return ResponseEntity.ok(ApiResponseTemplate.success("Template deleted."));
     }
 }

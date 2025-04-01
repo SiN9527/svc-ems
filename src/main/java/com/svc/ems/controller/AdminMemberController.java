@@ -2,7 +2,7 @@ package com.svc.ems.controller;
 
 import com.svc.ems.dto.auth.AdminMemberListRequest;
 import com.svc.ems.dto.auth.AdminMemberProfileResponse;
-import com.svc.ems.dto.auth.AdminRegisterRequest;
+import com.svc.ems.dto.auth.AdminMemberUpdateRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.svc.auth.AdminAuthService;
 import lombok.RequiredArgsConstructor;
@@ -38,14 +38,15 @@ public class AdminMemberController {
 //        return adminAuthService.getMemberProfile(eventId, memberId);
 //    }
 //
-//    /**
-//     * 編輯會員資料
-//     * @param req 編輯資料，包含 eventId、memberId 等
-//     */
-//    @PostMapping("/update")
-//    public ResponseEntity<ApiResponseTemplate<?>> adminUpdateMemberProfile(@RequestBody AdminMemberUpdateRequest req) {
-//        return adminAuthService.updateMemberProfile(req);
-//    }
+    /**
+     * 編輯會員資料
+     *
+     * @param req 編輯資料，包含 eventId、memberId 等
+     */
+    @PostMapping("/update")
+    public ResponseEntity<ApiResponseTemplate<String>> adminUpdateMemberProfile(@RequestBody AdminMemberUpdateRequest req) {
+        return adminAuthService.adminUpdateMemberProfile(req);
+    }
 //
 //    /**
 //     * 刪除會員資料

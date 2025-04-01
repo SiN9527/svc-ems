@@ -1,66 +1,58 @@
 package com.svc.ems.controller;
 
-import com.svc.ems.dto.auth.*;
+import com.svc.ems.dto.auth.LoginRequest;
+import com.svc.ems.dto.auth.MemberPwdUpdateRequest;
+import com.svc.ems.dto.auth.MemberRegisterRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
+import com.svc.ems.dto.mail.EmailTemplateDTO;
 import com.svc.ems.svc.auth.JwtAuthLoginService;
 import com.svc.ems.svc.auth.MemberAuthService;
-import com.svc.ems.svc.base.CommonCodeService;
+import com.svc.ems.svc.mail.EmailTemplateService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/sys/member")
-public class MemberSysController {
+@RequestMapping("/api/mail/member")
+@RequiredArgsConstructor
+public class MailTemplateController {
 
 
-    private final MemberAuthService memberAuthService;
-    private final JwtAuthLoginService jwtAuthLoginService;
+    private final EmailTemplateService emailTemplateService;
 
-    public MemberSysController(MemberAuthService memberAuthService, JwtAuthLoginService jwtAuthLoginService) {
-        this.memberAuthService = memberAuthService;
-
-        this.jwtAuthLoginService = jwtAuthLoginService;
+    /**
+     * 查詢某活動的所有信件模板
+     */
+    @PostMapping("/list")
+    public ResponseEntity<ApiResponseTemplate<?>> listTemplates(@RequestBody EmailTemplateDTO req) {
+        return emailTemplateService.getTemplatesByEvent(req);
     }
 
-    @PostMapping("/login")
-    @Operation(summary = "會員登入")
-    public ResponseEntity<ApiResponseTemplate<String>> authLogin(@RequestBody LoginRequest req, HttpServletResponse response) {
-
-        // 返回 JWT 和其他信息
-        return jwtAuthLoginService.memberAuthLogin(req,response);
+    /**
+     * 新增或更新信件模板
+     */
+    @PostMapping("/save")
+    public ResponseEntity<ApiResponseTemplate<?>> saveTemplate(@Valid @RequestBody EmailTemplateDTO req) {
+        return emailTemplateService.saveOrUpdate(req);
     }
 
-    //會員註冊
-    @PostMapping("/register")
-    @Operation(summary = "會員註冊")
-    public ResponseEntity<ApiResponseTemplate<String>> memberRegister(@RequestBody MemberRegisterRequest req) {
-
-        // 返回 JWT 和其他信息
-        return memberAuthService.memberRegister(req);
+    /**
+     * 根據主鍵刪除模板
+     */
+    @PostMapping("/delete")
+    public ResponseEntity<ApiResponseTemplate<?>> deleteTemplate(@RequestBody EmailTemplateDTO req) {
+        return emailTemplateService.deleteTemplate(req);
     }
-
-
-    //會員驗證
-    @PostMapping("/verify")
-    @Operation(summary = "會員註冊驗證")
-    public ResponseEntity<ApiResponseTemplate<String>> verifyEmail(@RequestBody Map<String, String> token, HttpServletResponse response) {
-        return memberAuthService.verifyEmail(token, response);
-    }
-
-    //會員忘記密碼
-    @PostMapping("/forgotPwd")
-    @Operation(summary = "會員找回密碼")
-    public ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(@RequestBody MemberPwdUpdateRequest req, @AuthenticationPrincipal UserDetails userDetails) {
-        return memberAuthService.memberForgotPwd(req);
-    }
-
 
 
 
