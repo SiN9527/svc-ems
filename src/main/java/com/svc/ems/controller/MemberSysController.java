@@ -58,15 +58,10 @@ public class MemberSysController {
     @PostMapping("/forgotPwd")
     @Operation(summary = "會員找回密碼")
     public ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(@RequestBody MemberPwdUpdateRequest req, @AuthenticationPrincipal UserDetails userDetails) {
-        return memberAuthService.memberForgotPwd(req, userDetails);
+        return memberAuthService.memberForgotPwd(req);
     }
 
-    //會員重設密碼
-    @PostMapping("/resetPwd")
-    @Operation(summary = "會員重設密碼")
-    public ResponseEntity<ApiResponseTemplate<?>> memberResetPwd(@RequestBody MemberResetPwdRequest req, @AuthenticationPrincipal UserDetails userDetails) {
-        return memberAuthService.memberResetPwd(req, userDetails);
-    }
+
 
 
 

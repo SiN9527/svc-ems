@@ -48,6 +48,14 @@ public class MemberAuthController {
         return memberAuthService.memberGetProfile(userDetails);
     }
 
+    //會員重設密碼
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/resetPwd")
+    @Operation(summary = "會員重設密碼")
+    public ResponseEntity<ApiResponseTemplate<?>> memberResetPwd(@RequestBody MemberResetPwdRequest req, @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
+        return memberAuthService.memberResetPasswordAfterLogin(req, userDetails,response);
+    }
+
     // 修改密碼
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/updatePwd")

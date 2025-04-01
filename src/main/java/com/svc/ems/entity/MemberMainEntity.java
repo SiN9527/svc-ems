@@ -80,6 +80,9 @@ public class MemberMainEntity {
     @Column(name = "enabled")
     private Boolean enabled;
 
+    @Column(name = "need_reset_pwd")
+    private Boolean needResetPwd;
+
     @Size(max = 50)
     @Column(name = "created_by", length = 50)
     private String createdBy;

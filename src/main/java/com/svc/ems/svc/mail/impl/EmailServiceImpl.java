@@ -1,6 +1,7 @@
 package com.svc.ems.svc.mail.impl;
 
 import com.svc.ems.config.jwt.JwtUtil;
+import com.svc.ems.entity.MemberMainEntity;
 import com.svc.ems.svc.mail.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -77,6 +78,18 @@ public class EmailServiceImpl implements EmailService {
         sendEmail(email, subject, content);
     }
 
+    @Override
+    public void sendPasswordChangedNotification(MemberMainEntity member) {
+        // 1️⃣ 設定信件內容
+        String subject = "Password Changed Notification";
+        String content = "<h3>Dear " + member.getFirstName() + " " + member.getLastName() + ",</h3>"
+                + "<p>Your password has been successfully changed.</p>"
+                + "<p>If you did not make this change, please contact us immediately.</p>";
+
+        // 2️⃣ 發送 Email
+        sendEmail(member.getEmail(), subject, content);
+    }
+
     /**
      * **發送 Email 的共用方法**
      *
@@ -99,4 +112,16 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    // EmailService 寄送暫時密碼通知
+    public void sendTempPasswordEmail(MemberMainEntity member, String tempPassword) {
+        String subject = "Temporary Password for AASD 2025";
+        String content = """
+                <p>Dear %s,</p>
+                <p>You requested to reset your password. Please use the following temporary password to log in:</p>
+                <p><b>%s</b></p>
+                <p>⚠️ For security reasons, you must reset your password immediately after logging in.</p>
+                """.formatted(member.getLastName(), tempPassword);
+        sendEmail(member.getEmail(), subject, content);
+
+    }
 }

@@ -24,8 +24,12 @@ public interface MemberAuthService {
     // 忘記密碼
     public ResponseEntity<ApiResponseTemplate<?>> memberFindPwd(AdminLoginRequest req);
 
+    ResponseEntity<ApiResponseTemplate<?>> memberResetPasswordAfterLogin(MemberResetPwdRequest req, UserDetails userDetails, HttpServletResponse response);
+
     // 登出
     public ResponseEntity<ApiResponseTemplate<?>> memberLogout(HttpServletResponse response);
+
+    ResponseEntity<ApiResponseTemplate<?>> memberUpdateEmail(MemberEmailUpdateRequest req, UserDetails userDetails);
 
     // 更新Token
     public ResponseEntity<ApiResponseTemplate<?>> memberRefreshToken(String refreshToken, HttpServletResponse response);
@@ -35,9 +39,10 @@ public interface MemberAuthService {
 
     public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(MemberPwdUpdateRequest req, UserDetails userDetails,HttpServletResponse response);
 
-    public ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(MemberPwdUpdateRequest req, UserDetails userDetails);
+    // **忘記密碼 API**
+    ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(MemberPwdUpdateRequest req);
 
-    public ResponseEntity<ApiResponseTemplate<?>> memberResetPwd(MemberResetPwdRequest req, UserDetails userDetails);
+//    public ResponseEntity<ApiResponseTemplate<?>> memberResetPwd(MemberResetPwdRequest req, UserDetails userDetails);
 
 
 }

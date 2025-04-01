@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +92,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         }
 
         // 密碼格式驗證
-        if (!isValidPassword(req.getPassword())) {
+        if (isValidPassword(req.getPassword())) {
             return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(HttpStatus.BAD_REQUEST.value(),
                     ErrorCode.PASSWORD_TOO_WEAK
             ));
@@ -180,107 +181,115 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
     // **忘記密碼 API**
     @Override
-    public ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(MemberPwdUpdateRequest req, UserDetails userDetails) {
-
+    public ResponseEntity<ApiResponseTemplate<?>> memberForgotPwd(MemberPwdUpdateRequest req) {
         String email = req.getEmail();
-        //  檢查會員是否存在
-        if (!memberMainRepository.existsByEmail(email)) {
+        Optional<MemberMainEntity> memberOpt = memberMainRepository.findByEmail(email);
+        if (memberOpt.isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.MEMBER_NOT_FOUND));
         }
+        MemberMainEntity member = memberOpt.get();
+        String tempPassword = generateTempPassword();
+        member.setPassword(passwordEncoder.encode(tempPassword));
+        member.setNeedResetPwd(true);
+        memberMainRepository.save(member);
 
-        //  發送密碼重設 Email
-        emailService.sendPasswordResetEmail(email);
-
-        //  回應成功消息
-        return ResponseEntity.ok(ApiResponseTemplate.success("reset password email sent successfully"));
+        emailService.sendTempPasswordEmail(member, tempPassword);
+        return ResponseEntity.ok(ApiResponseTemplate.success("Temporary password sent to your email."));
     }
 
     @Override
-    public ResponseEntity<ApiResponseTemplate<?>> memberResetPwd(@RequestBody MemberResetPwdRequest req, UserDetails userDetails) {
+    public ResponseEntity<ApiResponseTemplate<?>> memberResetPasswordAfterLogin(MemberResetPwdRequest req, UserDetails userDetails, HttpServletResponse response) {
 
 
-        String token = req.getToken();
-        String email = jwtUtil.extractUsername(token);
-        log.info(email);
-        // 檢查 token 是否正確
-        if (email == null || jwtUtil.isTokenExpired(token)) {
-            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.TOKEN_INVALID));
-        }
-
-        String newPassword = req.getPassword();
-
-        //  檢查密碼格式
-        if (!isValidPassword(newPassword)) {
-            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.PASSWORD_TOO_WEAK));
-        }
-
-
-        //  查找會員
-        MemberMainEntity member = memberMainRepository.findByEmail(email)
-                .orElseThrow(() -> new ServiceException(ErrorCode.INVALID_VERIFICATION_URL));
-        if (member == null) {
+        Optional<MemberMainEntity> memberOpt = jwtUtil.validateAndGetEntity(userDetails, memberMainRepository);
+        if (memberOpt.isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.MEMBER_NOT_FOUND));
         }
+        MemberMainEntity member = memberOpt.get();
 
-        String encryptedPassword = passwordEncoder.encode(newPassword);
+        // 驗證舊密碼是否正確
+        if (!passwordEncoder.matches(req.getPassword(), member.getPassword())) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "Invalid current password."));
+        }
 
-        //  更新密碼（加密後存入）
-        member.setPassword(passwordEncoder.encode(encryptedPassword));
+        // 設定新密碼與移除重設旗標
+        member.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        member.setNeedResetPwd(false);
         memberMainRepository.save(member);
 
-        //  回應成功消息
-        return ResponseEntity.ok(ApiResponseTemplate.success("Password reset successfully"));
+        // 清除 Cookie
+        clearCookies(response);
+
+        return ResponseEntity.ok(ApiResponseTemplate.success("Password updated successfully. Please log in again."));
     }
 
     /**
-     * 會員登出 API
+     * 會員修改密碼（需要舊密碼驗證 + 發送確認信）
      */
-    @Override
-    public ResponseEntity<ApiResponseTemplate<?>> memberLogout(HttpServletResponse response) {
-        // **清除 Cookie**
-        // **清除 Cookie**
-        Cookie accessCookie = new Cookie("AUTH_TOKEN", null);
-        clearCookies(accessCookie);
-
-        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", null);
-        clearCookies(refreshCookie);
-        SecurityContextHolder.clearContext();
-        response.addCookie(accessCookie);
-        response.addCookie(refreshCookie);
-
-        return ResponseEntity.ok(ApiResponseTemplate.success("Logout successful"));
-    }
-
     @Override
     public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(MemberPwdUpdateRequest req, UserDetails userDetails, HttpServletResponse response) {
 
-
-        Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(userDetails, memberMainRepository);
-        if (member.isEmpty()) {
+        // 根據登入的帳號取得會員資料
+        Optional<MemberMainEntity> memberOpt = jwtUtil.validateAndGetEntity(userDetails, memberMainRepository);
+        if (memberOpt.isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.MEMBER_NOT_FOUND));
         }
-        String newPassword = (passwordEncoder.encode(req.getNewPassword()));
-        member.get().setPassword(newPassword);
-        memberMainRepository.save(member.get());
 
-        // **清除 Cookie**
-        Cookie accessCookie = new Cookie("AUTH_TOKEN", null);
-        clearCookies(accessCookie);
+        MemberMainEntity member = memberOpt.get();
 
-        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", null);
-        clearCookies(refreshCookie);
+        //驗證舊密碼是否正確
+        if (!passwordEncoder.matches(req.getPassword(), member.getPassword())) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "Incorrect current password"));
+        }
 
-        response.addCookie(accessCookie);
-        response.addCookie(refreshCookie);
+        //驗證新密碼格式
+        if (isValidPassword(req.getNewPassword())) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, "Password must contain upper/lower case, number, min length 8."));
+        }
 
-        return ResponseEntity.ok(ApiResponseTemplate.success("Password updated successfully , please login again"));
+        //更新密碼（加密後存入 DB）
+        String newEncryptedPwd = passwordEncoder.encode(req.getNewPassword());
+        member.setPassword(newEncryptedPwd);
+        memberMainRepository.save(member);
+
+        clearCookies(response);
+
+        //發送 Email 通知使用者密碼已更新
+        emailService.sendPasswordChangedNotification(member);
+
+        return ResponseEntity.ok(ApiResponseTemplate.success("Password updated successfully, please login again"));
+    }
+
+
+    /**
+     * 會員更改 Email 並發送新驗證信
+     */
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> memberUpdateEmail(MemberEmailUpdateRequest req, UserDetails userDetails) {
+        Optional<MemberMainEntity> memberOpt = jwtUtil.validateAndGetEntity(userDetails, memberMainRepository);
+        if (memberOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.MEMBER_NOT_FOUND));
+        }
+
+        MemberMainEntity member = memberOpt.get();
+
+        // 更新 Email
+        String newEmail = req.getNewEmail();
+        member.setEmail(newEmail);
+        member.setEnabled(false); // 重新驗證帳號
+        memberMainRepository.save(member);
+
+        //發送驗證信
+        emailService.sendVerificationEmail(newEmail);
+
+        return ResponseEntity.ok(ApiResponseTemplate.success("Email updated. Please check your new email to verify your account."));
     }
 
 
     // 密碼格式驗證
     private boolean isValidPassword(String password) {
         // 密碼必須包含大寫字母、小寫字母、數字，且長度至少 8 位
-        return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$");
+        return !password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$");
     }
 
     /**
@@ -395,11 +404,61 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         return ResponseEntity.ok(ApiResponseTemplate.success("Profile updated successfully "));
     }
 
+
+    /**
+     * 會員登出 API
+     */
+    @Override
+    public ResponseEntity<ApiResponseTemplate<?>> memberLogout(HttpServletResponse response) {
+        // **清除 Cookie**
+        // **清除 Cookie**
+        Cookie accessCookie = new Cookie("AUTH_TOKEN", null);
+        clearCookies(accessCookie);
+
+        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", null);
+        clearCookies(refreshCookie);
+        SecurityContextHolder.clearContext();
+        response.addCookie(accessCookie);
+        response.addCookie(refreshCookie);
+
+        return ResponseEntity.ok(ApiResponseTemplate.success("Logout successful"));
+    }
+
+
     private void clearCookies(Cookie cookie) {
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
+    }
+
+    /** 清除認證 Cookie */
+    private void clearCookies(HttpServletResponse response) {
+        Cookie accessCookie = new Cookie("AUTH_TOKEN", null);
+        accessCookie.setHttpOnly(true);
+        accessCookie.setSecure(true);
+        accessCookie.setPath("/");
+        accessCookie.setMaxAge(0);
+
+        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", null);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(0);
+
+        response.addCookie(accessCookie);
+        response.addCookie(refreshCookie);
+    }
+
+    private String generateTempPassword() {
+        int length = 10;
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
 }
