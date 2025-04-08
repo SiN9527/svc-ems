@@ -29,8 +29,8 @@ public class MemberRoleEntity {
     @Column(name = "role_desc")
     private String roleDesc;
 
-    @Column(name = "event_id", length = 50, nullable = false)
-    private String eventId; // UUID 格式的活動 ID
+//    @Column(name = "event_id", length = 50, nullable = false)
+//    private String eventId; // UUID 格式的活動 ID
 
     @Column(name = "enabled")
     private Boolean enabled;

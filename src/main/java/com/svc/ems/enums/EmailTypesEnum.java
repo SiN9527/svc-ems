@@ -21,11 +21,11 @@ public enum EmailTypesEnum {
     SUBMISSION_SUCCESS ("07","submission success") ;  // 報名成功 (報名表)
 
 
-    private final String code;
+    private final String type;
     private final String desc;
 
-    EmailTypesEnum(String code, String desc) {
-        this.code = code;
+    EmailTypesEnum(String type, String desc) {
+        this.type = type;
         this.desc = desc;
     }
 }

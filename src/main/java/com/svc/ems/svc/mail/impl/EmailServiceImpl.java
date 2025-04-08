@@ -1,29 +1,39 @@
 package com.svc.ems.svc.mail.impl;
 
 import com.svc.ems.config.jwt.JwtUtil;
+import com.svc.ems.entity.EmailTemplateEntity;
 import com.svc.ems.entity.MemberMainEntity;
+import com.svc.ems.enums.EmailTypesEnum;
+import com.svc.ems.repo.EmailTemplateRepository;
 import com.svc.ems.svc.mail.EmailService;
+import com.svc.ems.utils.MailTemplateUtils;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
+    private final EmailTemplateRepository emailTemplateRepository;
     private final JavaMailSender mailSender;
     private final JwtUtil jwtUtil; // JWT 工具類
 
-    public EmailServiceImpl(JavaMailSender mailSender, JwtUtil jwtUtil) {
-        this.mailSender = mailSender;
-        this.jwtUtil = jwtUtil;
-    }
+    @Value("${spring.mail.username}")
+    private String fromAddress;
+
 
 
     /**
@@ -123,5 +133,43 @@ public class EmailServiceImpl implements EmailService {
                 """.formatted(member.getLastName(), tempPassword);
         sendEmail(member.getEmail(), subject, content);
 
+    }
+
+
+    /**
+     * 根據活動、範本類型、參數與收件者，寄出動態信件內容
+     * 僅允許 ADMIN 發送
+     */
+    @Override
+    public void sendTemplateMail(String eventId, EmailTypesEnum template, Map<String, String> params, String toEmail, UserDetails sender) {
+//        boolean isAdmin = sender.getAuthorities().stream()
+//                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+//
+//        if (!isAdmin) {
+//            throw new SecurityException("Only admin can send templated emails.");
+//        }
+
+        Optional<EmailTemplateEntity> optional = emailTemplateRepository.findByEventIdAndTemplateType(eventId, template.getType());
+        if (optional.isEmpty()) {
+            throw new IllegalArgumentException("Email template not found for type: " + template.name());
+        }
+
+        EmailTemplateEntity emailTemplate = optional.get();
+
+        String subject = MailTemplateUtils.fillTemplate(emailTemplate.getSubject(), params);
+        String content = MailTemplateUtils.fillTemplate(emailTemplate.getContent(), params);
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(content, true);
+            helper.setFrom(fromAddress);
+            mailSender.send(message);
+            log.info("Email sent to {} with template {}", toEmail, template.name());
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
+        }
     }
 }

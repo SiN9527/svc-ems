@@ -50,6 +50,8 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     private final JwtMemberDetailsService memberDetailsService;
     private final PasswordEncoder passwordEncoder;
 
+
+
     private final EmailService emailService;
     private final AdminMainRepository userRepository;
 
@@ -420,7 +422,6 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         SecurityContextHolder.clearContext();
         response.addCookie(accessCookie);
         response.addCookie(refreshCookie);
-
         return ResponseEntity.ok(ApiResponseTemplate.success("Logout successful"));
     }
 
