@@ -13,13 +13,13 @@ import java.util.List;
 public class GroupRegistrationEventRequest implements Serializable {
 
     @JsonProperty("RegistrationMainDto")
-    private List<RegistrationMainDto> registrationMainDto;
+    private List<RegistrationMainDto> registrationMainDtoList;
 
     @JsonProperty("RegistrationDetailDto")
-    private List<RegistrationMainDto> registrationDetailDto;
+    private List<RegistrationMainDto> registrationDetailDtoList;
 
     @JsonProperty("RegistrationExtraDto")
-    private List <RegistrationExtraDto> registrationExtraDto;
+    private List <RegistrationExtraDto> registrationExtraDtoList;
 
 
 

@@ -10,7 +10,7 @@ import java.io.Serializable;
 public class AccompanyingPersonPkEntity implements Serializable {
     private static final long serialVersionUID = -2099145621875497104L;
 
-    private Integer id;
+    private Integer seq;
 
 
     private String memberFollowedId;

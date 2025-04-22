@@ -16,7 +16,7 @@ public class RegistrationGroupMainEntity {
     @Id
     @Size(max = 20)
     @Column(name = "group_id", nullable = false, length = 20)
-    private String groupId;
+    private Integer groupId;
 
     @Size(max = 50)
     @NotNull

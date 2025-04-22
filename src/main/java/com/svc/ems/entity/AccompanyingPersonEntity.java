@@ -22,8 +22,8 @@ public class AccompanyingPersonEntity {
 
     @NotNull
     @Id
-    @Column(name = "id", nullable = false)
-    private Integer id;
+    @Column(name = "seq", nullable = false)
+    private Integer seq;
 
     @NotNull
     @Id

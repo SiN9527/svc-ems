@@ -7,6 +7,7 @@ import com.svc.ems.entity.*;
 import com.svc.ems.enums.ErrorCode;
 import com.svc.ems.repo.*;
 import com.svc.ems.svc.regi.RegistrationService;
+import com.svc.ems.utils.IdGeneratorUtils;
 import com.svc.ems.utils.MapperUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
 @Service
@@ -30,6 +32,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final AccompanyingPersonEntityRepository accompanyingPersonEntityRepository;
     private final MemberMainRepository memberMainRepository;
 
+    private final IdGeneratorUtils idGeneratorUtils;
     private final JwtUtil jwtUtil;
     private final MapperUtils mapper;
 
@@ -43,7 +46,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         RegistrationQueryResponse resp = RegistrationQueryResponse.builder().memberMainDto(memberDto).build();
         return ResponseEntity.ok(ApiResponseTemplate.success(resp
         ));
-     
+
     }
 
     /**
@@ -65,18 +68,18 @@ public class RegistrationServiceImpl implements RegistrationService {
         RegistrationExtraDto registrationExtraDto = req.getRegistrationExtraDto();
         List<AccompanyingPersonDto> accompanyingPersonDtoList = req.getAccompanyingPersonDtoList();
 
-        String uuid = UUID.randomUUID().toString();
+        String registrationId = idGeneratorUtils.generateRegNo(registrationDetailDto.getCountryOfAffiliation(),registrationMainDto.getRegistrationType());
         // 1. 檢查該會員是否已有此活動報名紀錄
         RegistrationMainEntity mainEntity = registrationMainRepository.findByEventIdAndMemberId(registrationMainDto.getEventId(), member.get().getMemberId())
-                .orElseGet(() -> createNewRegistrationMain(req, member.get(),uuid));
+                .orElseGet(() -> createNewRegistrationMain(req, member.get(), registrationId));
 
         // 2. 儲存報名詳細資料
         RegistrationDetailEntity detailEntity = RegistrationDetailEntity.builder()
-                .registrationId(uuid)
+                .registrationId(registrationId)
                 .title(registrationDetailDto.getTitle())
                 .firstName(registrationDetailDto.getFirstName())
                 .lastName(registrationDetailDto.getLastName())
-                .fullNameCn(mainEntity.getIsDomestic() ?registrationDetailDto.getFullNameCn():"")
+                .fullNameCn(mainEntity.getIsDomestic() ? registrationDetailDto.getFullNameCn() : "")
                 .gender(registrationDetailDto.getGender())
                 .dateOfBirth(registrationDetailDto.getDateOfBirth())
                 .nationality(registrationDetailDto.getNationality())
@@ -97,28 +100,117 @@ public class RegistrationServiceImpl implements RegistrationService {
         registrationDetailRepository.save(detailEntity);
 
 
-
         RegistrationExtraEntity registrationExtraEntity = MapperUtils.map(registrationExtraDto, RegistrationExtraEntity.class);
         registrationExtraEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         registrationExtraRepository.save(registrationExtraEntity);
 
 
+        registrationExtraEntity.setRegistrationId(registrationId);
+        AtomicInteger seq = new AtomicInteger(0);
+        accompanyingPersonDtoList.forEach(x ->
+        {
+            x.setMemberFollowedId(registrationId);
+            x.setSeq(seq.getAndIncrement());
+            x.setCreateAt(new Timestamp(System.currentTimeMillis()));
+        });
 
-        registrationExtraEntity.setRegistrationId(uuid);
-        accompanyingPersonDtoList.forEach(x->
-                {x.setMemberFollowedId(uuid);
-                x.setCreateAt(new Timestamp(System.currentTimeMillis()));});
-
-        List<AccompanyingPersonEntity> accompanyingPersonEntities = MapperUtils.mapList(accompanyingPersonDtoList, AccompanyingPersonEntity.class);
-        accompanyingPersonEntityRepository.saveAll(accompanyingPersonEntities);
+        if (!accompanyingPersonDtoList.isEmpty()) {
+            List<AccompanyingPersonEntity> accompanyingPersonEntities = MapperUtils.mapList(accompanyingPersonDtoList, AccompanyingPersonEntity.class);
+            accompanyingPersonEntityRepository.saveAll(accompanyingPersonEntities);
+        }
         return ResponseEntity.ok(ApiResponseTemplate.success("Registration Step 1 completed."
         ));
     }
 
     /**
+     * 團體報名 Step1
+     */
+    @Transactional
+    public ResponseEntity<ApiResponseTemplate<String>> registerGroupStep1(GroupRegistrationEventRequest req, UserDetails userDetails, HttpServletResponse response) {
+
+        Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(userDetails, memberMainRepository);
+        if (member.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.MEMBER_NOT_FOUND));
+        }
+       String eventId = req.getRegistrationMainDtoList().get(0).getEventId();
+        // 產生團體代碼，例如 GP1-2025-UUID縮寫
+        Integer groupId = idGeneratorUtils.generateGroupIndex(eventId);
+        String groupCode = "GP" + groupId;
+        int seq = 1;
+
+        AtomicInteger counter = new AtomicInteger(1);
+
+        for (RegistrationMainDto dto : req.getRegistrationMainDtoList()) {
+            String regId = idGeneratorUtils.generateFullRegistrationNumber(groupCode, seq);
+            // 1. 建立 Main
+            RegistrationMainEntity main = RegistrationMainEntity.builder()
+                    .registrationId(regId)
+                    .eventId(eventId)
+                    .memberId(member.get().getMemberId()) // 此處統一由主報名人送出
+                    .groupCode(groupCode)
+                    .registrationType(dto.getRegistrationType())
+                    .isDomestic(dto.getIsDomestic())
+                    .feeAmount(dto.getFeeAmount())
+                    .paymentStatus("UNPAID")
+                    .registrationStatus("PENDING")
+                    .isGroupMain(counter.get() == 1)
+                    .anyAccompanyingPerson(dto.getAnyAccompanyingPerson())
+                    .createdAt(new Timestamp(System.currentTimeMillis()))
+                    .updatedAt(new Timestamp(System.currentTimeMillis()))
+                    .build();
+
+            registrationMainRepository.save(main);
+            List<AccompanyingPersonDto> accompanyingPersonDtoList = dto.getAccompanyingPersonDtoList();
+
+            int finalSeq = seq;
+            accompanyingPersonDtoList.forEach(x->{
+                AccompanyingPersonEntity entity = MapperUtils.map(x, AccompanyingPersonEntity.class);
+                entity.setSeq(finalSeq);
+                entity.setMemberFollowedId(regId);
+                entity.setCreateAt(new Timestamp(System.currentTimeMillis()));
+                accompanyingPersonEntityRepository.save(entity);
+            });
+            seq++;
+        }
+            // 2. 建立 Detail
+            RegistrationDetailEntity detailEntity = mapper.map(req.get, RegistrationDetailEntity.class);
+            detailEntity.setRegistrationId(uuid);
+            detailEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+            registrationDetailRepository.save(detailEntity);
+
+            // 3. 附加項目
+            if (detail.getExtraList() != null) {
+                for (RegistrationExtraDto extraDto : detail.getExtraList()) {
+                    RegistrationExtraEntity extraEntity = mapper.map(extraDto, RegistrationExtraEntity.class);
+                    extraEntity.setRegistrationId(uuid);
+                    extraEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+                    registrationExtraRepository.save(extraEntity);
+                }
+            }
+
+            // 4. 陪同者（多筆）
+            if (detail.getAccompanyingList() != null) {
+                AtomicInteger seq = new AtomicInteger(1);
+                for (AccompanyingPersonDto acc : detail.getAccompanyingList()) {
+                    acc.setMemberFollowedId(uuid);
+                    acc.setSeq(seq.getAndIncrement());
+                    acc.setCreateAt(new Timestamp(System.currentTimeMillis()));
+                }
+                List<AccompanyingPersonEntity> accEntities = MapperUtils.mapList(detail.getAccompanyingList(), AccompanyingPersonEntity.class);
+                registrationDetailRepository.saveAll(accEntities);
+            }
+
+            counter.incrementAndGet();
+        }
+
+        return ResponseEntity.ok(ApiResponseTemplate.success("Group registration submitted successfully. Group Code: " + groupCode));
+    }
+
+
+    /**
      * 若無主表則新增一筆
      */
-    private RegistrationMainEntity createNewRegistrationMain(SoloRegistrationEventRequest req, MemberMainEntity member,String uuid) {
+    private RegistrationMainEntity createNewRegistrationMain(SoloRegistrationEventRequest req, MemberMainEntity member, String uuid) {
         RegistrationMainDto registrationMainDto = req.getRegistrationMainDto();
         RegistrationMainEntity mainEntity = RegistrationMainEntity.builder()
                 .registrationId(uuid)
@@ -134,7 +226,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .createdAt(new Timestamp(System.currentTimeMillis()))
                 .updatedAt(new Timestamp(System.currentTimeMillis()))
                 .build();
-         registrationMainRepository.save(mainEntity);
+        registrationMainRepository.save(mainEntity);
         return mainEntity;
     }
 }

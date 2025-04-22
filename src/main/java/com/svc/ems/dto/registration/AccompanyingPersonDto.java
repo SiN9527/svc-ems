@@ -16,8 +16,8 @@ import java.time.Instant;
 @Data
 public class AccompanyingPersonDto implements Serializable {
     @NotNull
-    @JsonProperty("Id")
-    Integer id;
+    @JsonProperty("Seq")
+    Integer seq;
     @NotNull
     @JsonProperty("MemberFollowedId")
     String memberFollowedId;
