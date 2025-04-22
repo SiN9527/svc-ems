@@ -1,6 +1,7 @@
 package com.svc.ems.svc.regi;
 
 import com.svc.ems.dto.base.ApiResponseTemplate;
+import com.svc.ems.dto.registration.GroupRegistrationEventRequest;
 import com.svc.ems.dto.registration.RegistrationQueryResponse;
 import com.svc.ems.dto.registration.SoloRegistrationEventRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,4 +17,7 @@ public interface RegistrationService {
 
     @Transactional
     ResponseEntity<ApiResponseTemplate<String>> registerStep1(SoloRegistrationEventRequest req, UserDetails userDetails, HttpServletResponse response);
+
+    @Transactional
+    ResponseEntity<ApiResponseTemplate<String>> registerGroupStep1(GroupRegistrationEventRequest req, UserDetails userDetails, HttpServletResponse response);
 }

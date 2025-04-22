@@ -12,8 +12,8 @@ import java.util.List;
 @Data
 public class GroupRegistrationEventRequest implements Serializable {
 
-    @JsonProperty("RegistrationMainDto")
-    private List<RegistrationMainDto> registrationMainDtoList;
+    @JsonProperty("GroupRegistrationMainDto")
+    private List<GroupRegistrationMainDto> groupRegistrationMainDto;
 
 
 

@@ -81,7 +81,7 @@ import java.util.List;
         /**
          * 依據團體代碼取得目前流水編號（001、002...）
          */
-        public int getNextGroupSeq(String eventId,Integer groupId) {
+        public int getNextGroupSeq(String eventId,String groupId) {
             List<RegistrationMainEntity> groupMembers = registrationGroupMainRepository.findByEventIdAndGroupId(eventId,groupId);
             return groupMembers.size() + 1;
         }

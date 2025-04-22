@@ -17,19 +17,19 @@ import java.time.Instant;
 public class RegistrationGroupMainDto implements Serializable {
     @Size(max = 20)
     @JsonProperty("GroupId")
-    Integer groupId;
-    @NotNull
+    String groupId;
+
     @JsonProperty("EventId")
     @Size(max = 50)
     String eventId;
     @JsonProperty("GroupName")
     @Size(max = 100)
     String groupName;
-    @NotNull
+
     @Size(max = 100)
     @JsonProperty("ContactName")
     String contactName;
-    @NotNull
+
     @Size(max = 100)
     @JsonProperty("ContactEmail")
     String contactEmail;

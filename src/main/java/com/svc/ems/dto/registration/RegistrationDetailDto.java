@@ -16,29 +16,29 @@ import java.time.Instant;
 @Data
 public class RegistrationDetailDto implements Serializable {
 
-    @NotNull
+
     @JsonProperty("Title")
     String title;
 
-    @NotNull
+
     @JsonProperty("FirstName")
     String firstName;
 
-    @NotNull
+
     @Size(max = 50)
     @JsonProperty("LastName")
     String lastName;
     @Size(max = 50)
     @JsonProperty("FullNameCn")
     String fullNameCn;
-    @NotNull
+
     @JsonProperty("Gender")
     String gender;
     @JsonProperty("DateOfBirth")
-    @NotNull
+
     Timestamp dateOfBirth;
     @JsonProperty("Nationality")
-    @NotNull
+
     @Size(max = 50)
     String nationality;
     @JsonProperty("PassportNumber")
@@ -63,7 +63,7 @@ public class RegistrationDetailDto implements Serializable {
     @Size(max = 50)
     String mobileNumber;
     @JsonProperty("Email")
-    @NotNull
+
     @Size(max = 100)
     String email;
     @JsonProperty("DietaryRequest")
@@ -80,6 +80,7 @@ public class RegistrationDetailDto implements Serializable {
     @JsonProperty("ParentDetailId")
     @Size(max = 50)
     String parentDetailId;
+
     @JsonProperty("PersonalId")
     @Size(max = 20)
     String personalId;

@@ -3,23 +3,25 @@ package com.svc.ems.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 
-@Getter
-@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 @Entity
 @Table(name = "REGISTRATION_GROUP_MAIN", schema = "ems_001")
 public class RegistrationGroupMainEntity {
     @Id
     @Size(max = 20)
     @Column(name = "group_id", nullable = false, length = 20)
-    private Integer groupId;
+    private String groupId;
 
     @Size(max = 50)
-    @NotNull
+
     @Column(name = "event_id", nullable = false, length = 50)
     private String eventId;
 
@@ -28,12 +30,11 @@ public class RegistrationGroupMainEntity {
     private String groupName;
 
     @Size(max = 100)
-    @NotNull
     @Column(name = "contact_name", nullable = false, length = 100)
     private String contactName;
 
     @Size(max = 100)
-    @NotNull
+
     @Column(name = "contact_email", nullable = false, length = 100)
     private String contactEmail;
 
@@ -49,9 +50,9 @@ public class RegistrationGroupMainEntity {
     private String paymentStatus;
 
     @Column(name = "created_at")
-    private Instant createdAt;
+    private Timestamp createdAt;
 
     @Column(name = "updated_at")
-    private Instant updatedAt;
+    private Timestamp updatedAt;
 
 }

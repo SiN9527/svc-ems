@@ -38,7 +38,7 @@ public enum ErrorCode {
     EMAIL_TEMPLATE_NOT_FOUND("E13", "Email template not found.", 400),
     INVALID_EMAIL_OR_PASSWORD("E14", "Invalid email or password.", 400),
     ACCOUNT_IS_DISABLED("E15", "Account is disabled.", 400),
-
+    REGISTRATION_ALREADY_EXISTS("E16", "registration already exist.", 400),
 
 
 

@@ -95,9 +95,6 @@ public class RegistrationDetailEntity {
     @Column(name = "email", nullable = false, length = 100)
     private String email;
 
-    @Lob
-    @Column(name = "dietary_request")
-    private String dietaryRequest;
 
     @Column(name = "is_accompanying_person")
     private Boolean isAccompanyingPerson;

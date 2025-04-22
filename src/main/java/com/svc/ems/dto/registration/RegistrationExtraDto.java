@@ -17,21 +17,17 @@ public class RegistrationExtraDto implements Serializable {
     String registrationId;
 
     @JsonProperty("AttendGalaDinner")
-    String attendGalaDinner;
+    boolean attendGalaDinner;
 
 
     @JsonProperty("AttendTour")
-    String attendTour;
+    boolean attendTour;
 
     @JsonProperty("AttendWelcomeReception")
-    String attendWelcomeReception;
+    boolean attendWelcomeReception;
 
     @JsonProperty("IsVegetarian")
-    String isVegetarian;
-    @JsonProperty("ItemName")
-    String itemName;
-    @JsonProperty("Status")
-    String status;
+    boolean isVegetarian;
 
     @JsonProperty("Fee")
     Integer fee;

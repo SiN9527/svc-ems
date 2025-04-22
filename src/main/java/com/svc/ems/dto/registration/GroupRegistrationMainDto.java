@@ -6,12 +6,13 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * DTO for {@link RegistrationMainEntity}
  */
 @Data
-public class RegistrationMainDto implements Serializable {
+public class GroupRegistrationMainDto implements Serializable {
 
     @JsonProperty("RegistrationId")
     String registrationId;
@@ -22,13 +23,14 @@ public class RegistrationMainDto implements Serializable {
     @JsonProperty("MemberId")
     String memberId;
     @JsonProperty("GroupCode")
+
     String groupCode;
 
     @JsonProperty("RegistrationType")
 
     String registrationType;
 
-    @JsonProperty("AnyAccompanyingPerson")
+    @JsonProperty(" AnyAccompanyingPerson")
     Boolean anyAccompanyingPerson;
 
     @JsonProperty("IsDomestic")
@@ -37,10 +39,9 @@ public class RegistrationMainDto implements Serializable {
     @JsonProperty("FeeAmount")
     Integer feeAmount;
     @JsonProperty("PaymentStatus")
-
     String paymentStatus;
-    @JsonProperty("RegistrationStatus")
 
+    @JsonProperty("RegistrationStatus")
     String registrationStatus;
     @JsonProperty("CreatedAt")
     Timestamp createdAt;
@@ -50,5 +51,13 @@ public class RegistrationMainDto implements Serializable {
     @JsonProperty("IsGroupMain")
     Boolean isGroupMain;
 
+    @JsonProperty("RegistrationDetailDto")
+    private RegistrationDetailDto registrationDetailDto;
+
+    @JsonProperty("RegistrationExtraDto")
+    private RegistrationExtraDto registrationExtraDto;
+
+    @JsonProperty("AccompanyingPersonDtoList")
+    private List<AccompanyingPersonDto> accompanyingPersonDtoList;
 
 }

@@ -15,10 +15,10 @@ import java.time.Instant;
  */
 @Data
 public class AccompanyingPersonDto implements Serializable {
-    @NotNull
+
     @JsonProperty("Seq")
     Integer seq;
-    @NotNull
+
     @JsonProperty("MemberFollowedId")
     String memberFollowedId;
     @Size(max = 50)

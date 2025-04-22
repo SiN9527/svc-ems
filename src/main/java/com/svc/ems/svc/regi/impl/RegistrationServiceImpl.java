@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
@@ -29,6 +28,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final RegistrationMainRepository registrationMainRepository;
     private final RegistrationDetailRepository registrationDetailRepository;
     private final RegistrationExtraRepository registrationExtraRepository;
+    private final RegistrationGroupMainRepository registrationGroupMainRepository;
     private final AccompanyingPersonEntityRepository accompanyingPersonEntityRepository;
     private final MemberMainRepository memberMainRepository;
 
@@ -72,7 +72,9 @@ public class RegistrationServiceImpl implements RegistrationService {
         // 1. 檢查該會員是否已有此活動報名紀錄
         RegistrationMainEntity mainEntity = registrationMainRepository.findByEventIdAndMemberId(registrationMainDto.getEventId(), member.get().getMemberId())
                 .orElseGet(() -> createNewRegistrationMain(req, member.get(), registrationId));
-
+if (mainEntity.getRegistrationStatus().equals("PENDING")) {
+            return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.REGISTRATION_ALREADY_EXISTS));
+        }
         // 2. 儲存報名詳細資料
        saveRegistrationDetail(registrationDetailDto,registrationId);
        saveRegistrationExtra(registrationExtraDto,registrationId);
@@ -104,13 +106,14 @@ public class RegistrationServiceImpl implements RegistrationService {
      * 團體報名 Step1
      */
     @Transactional
+    @Override
     public ResponseEntity<ApiResponseTemplate<String>> registerGroupStep1(GroupRegistrationEventRequest req, UserDetails userDetails, HttpServletResponse response) {
 
         Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(userDetails, memberMainRepository);
         if (member.isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.MEMBER_NOT_FOUND));
         }
-       String eventId = req.getRegistrationMainDtoList().get(0).getEventId();
+       String eventId = req.getGroupRegistrationMainDto().get(0).getEventId();
         // 產生團體代碼，例如 GP1-2025-UUID縮寫
         Integer groupId = idGeneratorUtils.generateGroupIndex(eventId);
         String groupCode = "GP" + groupId;
@@ -118,48 +121,30 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         AtomicInteger counter = new AtomicInteger(1);
 
-        for (RegistrationMainDto dto : req.getRegistrationMainDtoList()) {
+        for (GroupRegistrationMainDto dto : req.getGroupRegistrationMainDto()) {
             String regId = idGeneratorUtils.generateFullRegistrationNumber(groupCode, seq);
             RegistrationDetailDto registrationDetailDto = dto.getRegistrationDetailDto();
             RegistrationExtraDto registrationExtraDto = dto.getRegistrationExtraDto();
             List<AccompanyingPersonDto> accompanyingPersonDtoList = dto.getAccompanyingPersonDtoList();
 
-            saveGroupRegistrationMain(dto,member.get(),regId);
+            saveGroupRegistrationMain(dto,member.get(),regId,groupCode);
             saveRegistrationDetail(registrationDetailDto,regId);
             saveRegistrationExtra(registrationExtraDto,regId);
             saveRegistrationAccompany(accompanyingPersonDtoList,regId);
-            // 1. 建立 Main
-//            RegistrationMainEntity main = RegistrationMainEntity.builder()
-//                    .registrationId(regId)
-//                    .eventId(eventId)
-//                    .memberId(member.get().getMemberId()) // 此處統一由主報名人送出
-//                    .groupCode(groupCode)
-//                    .registrationType(dto.getRegistrationType())
-//                    .isDomestic(dto.getIsDomestic())
-//                    .feeAmount(dto.getFeeAmount())
-//                    .paymentStatus("UNPAID")
-//                    .registrationStatus("PENDING")
-//                    .isGroupMain(counter.get() == 1)
-//                    .anyAccompanyingPerson(dto.getAnyAccompanyingPerson())
-//                    .createdAt(new Timestamp(System.currentTimeMillis()))
-//                    .updatedAt(new Timestamp(System.currentTimeMillis()))
-//                    .build();
-//
-//            registrationMainRepository.save(main);
-//            List<AccompanyingPersonDto> accompanyingPersonDtoList = dto.getAccompanyingPersonDtoList();
-//
-//            int finalSeq = seq;
-//            accompanyingPersonDtoList.forEach(x->{
-//                AccompanyingPersonEntity entity = MapperUtils.map(x, AccompanyingPersonEntity.class);
-//                entity.setSeq(finalSeq);
-//                entity.setMemberFollowedId(regId);
-//                entity.setCreateAt(new Timestamp(System.currentTimeMillis()));
-//                accompanyingPersonEntityRepository.save(entity);
-//            });
+
+            RegistrationGroupMainEntity groupMainEntity = RegistrationGroupMainEntity.builder()
+                    .groupId(groupCode)
+                    .eventId(eventId)
+                    .contactName(member.get().getLastName())
+                    .contactEmail(member.get().getEmail())
+                    .contactPhone(member.get().getTelNumber())
+                    .groupSize(req.getGroupRegistrationMainDto().size())
+                    .paymentStatus("UNPAID")
+                    .createdAt(new Timestamp(System.currentTimeMillis()))
+                    .updatedAt(new Timestamp(System.currentTimeMillis()))
+                    .build();
+            registrationGroupMainRepository.save(groupMainEntity);
             seq++;
-
-
-
             counter.incrementAndGet();
         }
 
@@ -167,12 +152,16 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
 
-    private void saveGroupRegistrationMain(RegistrationMainDto dto, MemberMainEntity member, String regId){
+    private void saveGroupRegistrationMain(GroupRegistrationMainDto dto, MemberMainEntity member, String regId,String groupCode){
+
+
+
 
         RegistrationMainEntity mainEntity = RegistrationMainEntity.builder()
                 .registrationId(regId)
                 .eventId(dto.getEventId())
                 .memberId(member.getMemberId())
+                .groupCode(groupCode)
                 .registrationType(dto.getRegistrationType())
                 .isDomestic(dto.getIsDomestic())
                 .feeAmount(dto.getFeeAmount()) // Step2再計算
@@ -206,7 +195,6 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .telNumber(registrationDetailDto.getTelNumber())
                 .mobileNumber(registrationDetailDto.getMobileNumber())
                 .email(registrationDetailDto.getEmail())
-                .dietaryRequest(registrationDetailDto.getDietaryRequest())
                 .registrationRole("PRESENT")
                 .uploadUrl("")
                 .isAccompanyingPerson(false)

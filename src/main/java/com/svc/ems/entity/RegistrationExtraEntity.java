@@ -3,12 +3,14 @@ package com.svc.ems.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -25,31 +27,17 @@ public class RegistrationExtraEntity {
 
 
     @Column(name = "attend_gala_dinner")
-    private String attendGalaDinner;
+    private boolean attendGalaDinner;
 
 
     @Column(name = "attend_tour")
-    private String attendTour;
-
-
+    private boolean attendTour;
 
     @Column(name = "attend_welcome_reception")
-    private String attendWelcomeReception;
+    private boolean attendWelcomeReception;
 
     @Column(name = "is_vegetarian")
-    private String isVegetarian;
-
-
-
-    @Size(max = 100)
-    @Column(name = "item_name", nullable = false, length = 100)
-    private String itemName;
-
-
-    @Lob
-    @Column(name = "status", nullable = false)
-    private String status;
-
+    private boolean isVegetarian;
 
     @Column(name = "fee", nullable = false)
     private Integer fee;
