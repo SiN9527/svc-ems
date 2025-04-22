@@ -1,19 +1,16 @@
 package com.svc.ems.dto.registration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.Value;
 
 import java.io.Serializable;
-import java.sql.Time;
 import java.sql.Timestamp;
 
 /**
  * DTO for {@link com.svc.ems.entity.MemberRoleEventEntity}
  */
 @Data
-public class RegistrationDetailRequest implements Serializable {
+public class RegistrationEventRequest implements Serializable {
 
     @JsonProperty("eventId")
     private String EventId;  // 活動ID
