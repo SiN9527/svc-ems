@@ -20,8 +20,8 @@ public interface AdminAuthService {
 
     public ResponseEntity<ApiResponseTemplate<?>> adminUpdateProfile(AdminRegisterRequest req);
 
-
     public  ResponseEntity<ApiResponseTemplate<List<AdminMemberProfileResponse>>> adminGetMemberList(AdminMemberListRequest req);
+
 
     public ResponseEntity<ApiResponseTemplate<?>> adminGetMemberProfile(AdminRegisterRequest req);
 

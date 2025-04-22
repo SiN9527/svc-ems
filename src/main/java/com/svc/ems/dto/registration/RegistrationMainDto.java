@@ -58,6 +58,12 @@ public class RegistrationMainDto implements Serializable {
     @JsonProperty("IsGroupMain")
     Boolean isGroupMain;
 
+    @JsonProperty("RegistrationDetailDto")
+    private RegistrationDetailDto registrationDetailDto;
+
+    @JsonProperty("RegistrationExtraDto")
+    private RegistrationExtraDto registrationExtraDto;
+
     @JsonProperty("AccompanyingPersonDtoList")
     private List<AccompanyingPersonDto> accompanyingPersonDtoList;
 

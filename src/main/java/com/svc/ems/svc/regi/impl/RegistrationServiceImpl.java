@@ -74,52 +74,30 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .orElseGet(() -> createNewRegistrationMain(req, member.get(), registrationId));
 
         // 2. 儲存報名詳細資料
-        RegistrationDetailEntity detailEntity = RegistrationDetailEntity.builder()
-                .registrationId(registrationId)
-                .title(registrationDetailDto.getTitle())
-                .firstName(registrationDetailDto.getFirstName())
-                .lastName(registrationDetailDto.getLastName())
-                .fullNameCn(mainEntity.getIsDomestic() ? registrationDetailDto.getFullNameCn() : "")
-                .gender(registrationDetailDto.getGender())
-                .dateOfBirth(registrationDetailDto.getDateOfBirth())
-                .nationality(registrationDetailDto.getNationality())
-                .passportNumber(registrationDetailDto.getPassportNumber())
-                .department(registrationDetailDto.getDepartment())
-                .affiliation(registrationDetailDto.getAffiliation())
-                .cityOfAffiliation(registrationDetailDto.getCityOfAffiliation())
-                .countryOfAffiliation(registrationDetailDto.getCountryOfAffiliation())
-                .telNumber(registrationDetailDto.getTelNumber())
-                .mobileNumber(registrationDetailDto.getMobileNumber())
-                .email(registrationDetailDto.getEmail())
-                .dietaryRequest(registrationDetailDto.getDietaryRequest())
-                .registrationRole("PRESENT")
-                .uploadUrl("")
-                .isAccompanyingPerson(false)
-                .createdAt(new Timestamp(System.currentTimeMillis()))
-                .build();
-        registrationDetailRepository.save(detailEntity);
+       saveRegistrationDetail(registrationDetailDto,registrationId);
+       saveRegistrationExtra(registrationExtraDto,registrationId);
+       saveRegistrationAccompany(accompanyingPersonDtoList,registrationId);
 
 
-        RegistrationExtraEntity registrationExtraEntity = MapperUtils.map(registrationExtraDto, RegistrationExtraEntity.class);
-        registrationExtraEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-        registrationExtraRepository.save(registrationExtraEntity);
 
 
-        registrationExtraEntity.setRegistrationId(registrationId);
-        AtomicInteger seq = new AtomicInteger(0);
-        accompanyingPersonDtoList.forEach(x ->
-        {
-            x.setMemberFollowedId(registrationId);
-            x.setSeq(seq.getAndIncrement());
-            x.setCreateAt(new Timestamp(System.currentTimeMillis()));
-        });
 
+        return ResponseEntity.ok(ApiResponseTemplate.success("Registration Step 1 completed."
+        ));
+    }
+
+    private void saveRegistrationAccompany(List<AccompanyingPersonDto> accompanyingPersonDtoList, String registrationId) {
         if (!accompanyingPersonDtoList.isEmpty()) {
+            AtomicInteger seq = new AtomicInteger(0);
+            accompanyingPersonDtoList.forEach(x ->
+            {
+                x.setMemberFollowedId(registrationId);
+                x.setSeq(seq.getAndIncrement());
+                x.setCreateAt(new Timestamp(System.currentTimeMillis()));
+            });
             List<AccompanyingPersonEntity> accompanyingPersonEntities = MapperUtils.mapList(accompanyingPersonDtoList, AccompanyingPersonEntity.class);
             accompanyingPersonEntityRepository.saveAll(accompanyingPersonEntities);
         }
-        return ResponseEntity.ok(ApiResponseTemplate.success("Registration Step 1 completed."
-        ));
     }
 
     /**
@@ -142,63 +120,45 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         for (RegistrationMainDto dto : req.getRegistrationMainDtoList()) {
             String regId = idGeneratorUtils.generateFullRegistrationNumber(groupCode, seq);
-            // 1. 建立 Main
-            RegistrationMainEntity main = RegistrationMainEntity.builder()
-                    .registrationId(regId)
-                    .eventId(eventId)
-                    .memberId(member.get().getMemberId()) // 此處統一由主報名人送出
-                    .groupCode(groupCode)
-                    .registrationType(dto.getRegistrationType())
-                    .isDomestic(dto.getIsDomestic())
-                    .feeAmount(dto.getFeeAmount())
-                    .paymentStatus("UNPAID")
-                    .registrationStatus("PENDING")
-                    .isGroupMain(counter.get() == 1)
-                    .anyAccompanyingPerson(dto.getAnyAccompanyingPerson())
-                    .createdAt(new Timestamp(System.currentTimeMillis()))
-                    .updatedAt(new Timestamp(System.currentTimeMillis()))
-                    .build();
-
-            registrationMainRepository.save(main);
+            RegistrationDetailDto registrationDetailDto = dto.getRegistrationDetailDto();
+            RegistrationExtraDto registrationExtraDto = dto.getRegistrationExtraDto();
             List<AccompanyingPersonDto> accompanyingPersonDtoList = dto.getAccompanyingPersonDtoList();
 
-            int finalSeq = seq;
-            accompanyingPersonDtoList.forEach(x->{
-                AccompanyingPersonEntity entity = MapperUtils.map(x, AccompanyingPersonEntity.class);
-                entity.setSeq(finalSeq);
-                entity.setMemberFollowedId(regId);
-                entity.setCreateAt(new Timestamp(System.currentTimeMillis()));
-                accompanyingPersonEntityRepository.save(entity);
-            });
+            saveGroupRegistrationMain(dto,member.get(),regId);
+            saveRegistrationDetail(registrationDetailDto,regId);
+            saveRegistrationExtra(registrationExtraDto,regId);
+            saveRegistrationAccompany(accompanyingPersonDtoList,regId);
+            // 1. 建立 Main
+//            RegistrationMainEntity main = RegistrationMainEntity.builder()
+//                    .registrationId(regId)
+//                    .eventId(eventId)
+//                    .memberId(member.get().getMemberId()) // 此處統一由主報名人送出
+//                    .groupCode(groupCode)
+//                    .registrationType(dto.getRegistrationType())
+//                    .isDomestic(dto.getIsDomestic())
+//                    .feeAmount(dto.getFeeAmount())
+//                    .paymentStatus("UNPAID")
+//                    .registrationStatus("PENDING")
+//                    .isGroupMain(counter.get() == 1)
+//                    .anyAccompanyingPerson(dto.getAnyAccompanyingPerson())
+//                    .createdAt(new Timestamp(System.currentTimeMillis()))
+//                    .updatedAt(new Timestamp(System.currentTimeMillis()))
+//                    .build();
+//
+//            registrationMainRepository.save(main);
+//            List<AccompanyingPersonDto> accompanyingPersonDtoList = dto.getAccompanyingPersonDtoList();
+//
+//            int finalSeq = seq;
+//            accompanyingPersonDtoList.forEach(x->{
+//                AccompanyingPersonEntity entity = MapperUtils.map(x, AccompanyingPersonEntity.class);
+//                entity.setSeq(finalSeq);
+//                entity.setMemberFollowedId(regId);
+//                entity.setCreateAt(new Timestamp(System.currentTimeMillis()));
+//                accompanyingPersonEntityRepository.save(entity);
+//            });
             seq++;
-        }
-            // 2. 建立 Detail
-            RegistrationDetailEntity detailEntity = mapper.map(req.get, RegistrationDetailEntity.class);
-            detailEntity.setRegistrationId(uuid);
-            detailEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-            registrationDetailRepository.save(detailEntity);
 
-            // 3. 附加項目
-            if (detail.getExtraList() != null) {
-                for (RegistrationExtraDto extraDto : detail.getExtraList()) {
-                    RegistrationExtraEntity extraEntity = mapper.map(extraDto, RegistrationExtraEntity.class);
-                    extraEntity.setRegistrationId(uuid);
-                    extraEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-                    registrationExtraRepository.save(extraEntity);
-                }
-            }
 
-            // 4. 陪同者（多筆）
-            if (detail.getAccompanyingList() != null) {
-                AtomicInteger seq = new AtomicInteger(1);
-                for (AccompanyingPersonDto acc : detail.getAccompanyingList()) {
-                    acc.setMemberFollowedId(uuid);
-                    acc.setSeq(seq.getAndIncrement());
-                    acc.setCreateAt(new Timestamp(System.currentTimeMillis()));
-                }
-                List<AccompanyingPersonEntity> accEntities = MapperUtils.mapList(detail.getAccompanyingList(), AccompanyingPersonEntity.class);
-                registrationDetailRepository.saveAll(accEntities);
-            }
 
             counter.incrementAndGet();
         }
@@ -207,13 +167,70 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
 
+    private void saveGroupRegistrationMain(RegistrationMainDto dto, MemberMainEntity member, String regId){
+
+        RegistrationMainEntity mainEntity = RegistrationMainEntity.builder()
+                .registrationId(regId)
+                .eventId(dto.getEventId())
+                .memberId(member.getMemberId())
+                .registrationType(dto.getRegistrationType())
+                .isDomestic(dto.getIsDomestic())
+                .feeAmount(dto.getFeeAmount()) // Step2再計算
+                .paymentStatus("UNPAID")
+                .registrationStatus("PENDING")
+                .isGroupMain(dto.getIsGroupMain())
+                .anyAccompanyingPerson(dto.getAnyAccompanyingPerson())
+                .createdAt(new Timestamp(System.currentTimeMillis()))
+                .updatedAt(new Timestamp(System.currentTimeMillis()))
+                .build();
+        registrationMainRepository.save(mainEntity);
+
+    }
+
+    private void saveRegistrationDetail(RegistrationDetailDto registrationDetailDto,String registrationId){
+
+        RegistrationDetailEntity detailEntity = RegistrationDetailEntity.builder()
+                .registrationId(registrationId)
+                .title(registrationDetailDto.getTitle())
+                .firstName(registrationDetailDto.getFirstName())
+                .lastName(registrationDetailDto.getLastName())
+                .fullNameCn("Taiwan".equals(registrationDetailDto.getCountryOfAffiliation()) ? registrationDetailDto.getFullNameCn() : "")
+                .gender(registrationDetailDto.getGender())
+                .dateOfBirth(registrationDetailDto.getDateOfBirth())
+                .nationality(registrationDetailDto.getNationality())
+                .passportNumber(registrationDetailDto.getPassportNumber())
+                .department(registrationDetailDto.getDepartment())
+                .affiliation(registrationDetailDto.getAffiliation())
+                .cityOfAffiliation(registrationDetailDto.getCityOfAffiliation())
+                .countryOfAffiliation(registrationDetailDto.getCountryOfAffiliation())
+                .telNumber(registrationDetailDto.getTelNumber())
+                .mobileNumber(registrationDetailDto.getMobileNumber())
+                .email(registrationDetailDto.getEmail())
+                .dietaryRequest(registrationDetailDto.getDietaryRequest())
+                .registrationRole("PRESENT")
+                .uploadUrl("")
+                .isAccompanyingPerson(false)
+                .createdAt(new Timestamp(System.currentTimeMillis()))
+                .build();
+        registrationDetailRepository.save(detailEntity);
+    }
+
+    private void saveRegistrationExtra(RegistrationExtraDto dto,String registrationId){
+
+        RegistrationExtraEntity registrationExtraEntity = MapperUtils.map(dto, RegistrationExtraEntity.class);
+        registrationExtraEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        registrationExtraEntity.setRegistrationId(registrationId);
+        registrationExtraRepository.save(registrationExtraEntity);
+    }
+
+
     /**
      * 若無主表則新增一筆
      */
-    private RegistrationMainEntity createNewRegistrationMain(SoloRegistrationEventRequest req, MemberMainEntity member, String uuid) {
+    private RegistrationMainEntity createNewRegistrationMain(SoloRegistrationEventRequest req, MemberMainEntity member, String regId) {
         RegistrationMainDto registrationMainDto = req.getRegistrationMainDto();
         RegistrationMainEntity mainEntity = RegistrationMainEntity.builder()
-                .registrationId(uuid)
+                .registrationId(regId)
                 .eventId(req.getRegistrationMainDto().getEventId())
                 .memberId(member.getMemberId())
                 .registrationType(registrationMainDto.getRegistrationType())

@@ -15,11 +15,9 @@ public class GroupRegistrationEventRequest implements Serializable {
     @JsonProperty("RegistrationMainDto")
     private List<RegistrationMainDto> registrationMainDtoList;
 
-    @JsonProperty("RegistrationDetailDto")
-    private List<RegistrationMainDto> registrationDetailDtoList;
 
-    @JsonProperty("RegistrationExtraDto")
-    private List <RegistrationExtraDto> registrationExtraDtoList;
+
+
 
 
 
