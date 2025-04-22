@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 
 @Getter
@@ -18,21 +19,42 @@ public class RegistrationExtraEntity {
     @Column(name = "extra_id", nullable = false)
     private Long id;
 
+
+    @Column(name = "registration_id", nullable = false)
+    private  String  registrationId;
+
+
+    @Column(name = "attend_gala_dinner")
+    private String attendGalaDinner;
+
+
+    @Column(name = "attend_tour")
+    private String attendTour;
+
+
+
+    @Column(name = "attend_welcome_reception")
+    private String attendWelcomeReception;
+
+    @Column(name = "is_vegetarian")
+    private String isVegetarian;
+
+
+
     @Size(max = 100)
-    @NotNull
     @Column(name = "item_name", nullable = false, length = 100)
     private String itemName;
 
-    @NotNull
+
     @Lob
     @Column(name = "status", nullable = false)
     private String status;
 
-    @NotNull
+
     @Column(name = "fee", nullable = false)
     private Integer fee;
 
     @Column(name = "created_at")
-    private Instant createdAt;
+    private Timestamp createdAt;
 
 }

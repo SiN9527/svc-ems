@@ -22,39 +22,44 @@ public class RegistrationMainEntity {
 
     @Size(max = 36)
     @NotNull
-    @Column(name = "event_id", nullable = false, length = 36)
+    @Column(name = "event_id")
     private String eventId;
 
     @Size(max = 36)
     @NotNull
-    @Column(name = "member_id", nullable = false, length = 36)
+    @Column(name = "member_id")
     private String memberId;
 
     @Size(max = 20)
-    @Column(name = "group_code", length = 20)
+    @Column(name = "group_code")
     private String groupCode;
 
     @Size(max = 50)
     @NotNull
-    @Column(name = "registration_type", nullable = false, length = 50)
+    @Column(name = "registration_type")
     private String registrationType;
 
+
     @NotNull
-    @Column(name = "is_domestic", nullable = false)
+    @Column(name = "any_accompanying_person")
+    private Boolean anyAccompanyingPerson = false;
+
+    @NotNull
+    @Column(name = "is_domestic")
     private Boolean isDomestic = false;
 
     @NotNull
-    @Column(name = "fee_amount", nullable = false)
+    @Column(name = "fee_amount")
     private Integer feeAmount;
 
     @NotNull
     @Lob
-    @Column(name = "payment_status", nullable = false)
+    @Column(name = "payment_status")
     private String paymentStatus;
 
     @NotNull
     @Lob
-    @Column(name = "registration_status", nullable = false)
+    @Column(name = "registration_status")
     private String registrationStatus;
 
     @Column(name = "created_at")
@@ -64,7 +69,7 @@ public class RegistrationMainEntity {
     private Timestamp updatedAt;
 
     @NotNull
-    @Column(name = "is_group_main", nullable = false)
+    @Column(name = "is_group_main")
     private Boolean isGroupMain = false;
 
 }

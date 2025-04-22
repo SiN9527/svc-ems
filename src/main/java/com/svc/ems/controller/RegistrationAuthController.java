@@ -1,11 +1,14 @@
 package com.svc.ems.controller;
 
-import com.svc.ems.dto.auth.*;
+import com.svc.ems.dto.auth.MemberProfileResponse;
+import com.svc.ems.dto.auth.MemberPwdUpdateRequest;
+import com.svc.ems.dto.auth.MemberResetPwdRequest;
+import com.svc.ems.dto.auth.MemberUpdateRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
-import com.svc.ems.dto.common.CommonCodeList;
-import com.svc.ems.dto.common.CommonCodeReqDTO;
+import com.svc.ems.dto.registration.RegistrationQueryResponse;
+import com.svc.ems.dto.registration.SoloRegistrationEventRequest;
 import com.svc.ems.svc.auth.MemberAuthService;
-import com.svc.ems.svc.base.CommonCodeService;
+import com.svc.ems.svc.regi.RegistrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
@@ -14,73 +17,39 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-
 @RestController
-@RequestMapping("/api/auth/member")
-public class MemberAuthController {
+@RequestMapping("/api/auth/event")
+public class RegistrationAuthController {
 
 
-    private final MemberAuthService memberAuthService;
+    private final RegistrationService registrationService;
 
 
-    public MemberAuthController(MemberAuthService memberAuthService) {
-        this.memberAuthService = memberAuthService;
+    public RegistrationAuthController(RegistrationService registrationService) {
+        this.registrationService = registrationService;
 
     }
 
     //會員登出
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/logout")
-    @Operation(summary = "會員登出")
-    public ResponseEntity<ApiResponseTemplate<?>> memberLogout(HttpServletResponse response) {
-        return memberAuthService.memberLogout(response);
+    @PostMapping("/soloRegi")
+    @Operation(summary = "登入者單人報名")
+    public ResponseEntity<ApiResponseTemplate<String>> soloRegistration(
+            SoloRegistrationEventRequest req, @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
+        return registrationService.registerStep1(req,userDetails,response);
     }
 
     //{ withCredentials: true }
 
-    //取得個人資料
+
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/profile")
-    @Operation(summary = "登入者取得個人資料")
-    public ResponseEntity<ApiResponseTemplate<MemberProfileResponse>> memberGetProfile(@AuthenticationPrincipal UserDetails userDetails) {
-        return memberAuthService.memberGetProfile(userDetails);
+    @GetMapping("/regiInfo")
+    @Operation(summary = "登入者取得報名資料")
+    public ResponseEntity<ApiResponseTemplate<RegistrationQueryResponse>> memberGetProfile(@AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
+        return registrationService.registerStep1Query(userDetails,response);
     }
 
-    //會員重設密碼
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/resetPwd")
-    @Operation(summary = "會員重設密碼")
-    public ResponseEntity<ApiResponseTemplate<?>> memberResetPwd(@RequestBody MemberResetPwdRequest req, @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
-        return memberAuthService.memberResetPasswordAfterLogin(req, userDetails,response);
-    }
 
-    // 修改密碼
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/updatePwd")
-    @Operation(summary = "登入者修改密碼")
-    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(@RequestBody MemberPwdUpdateRequest req, @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
-        return memberAuthService.memberUpdatePwd(req, userDetails, response);
-    }
 
-    // 修改密碼
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/updateProfile")
-    @Operation(summary = "登入者修改資料")
-    public ResponseEntity<ApiResponseTemplate<?>> memberUpdatePwd(@RequestBody MemberUpdateRequest req, @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
-        return memberAuthService.memberUpdateProfile(req, userDetails, response);
-    }
-
-    //更新token
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/refreshToken")
-    @Operation(summary = "登入者 刷新 Cookie 與Token ")
-    public ResponseEntity<ApiResponseTemplate<?>> memberRefreshToken(@CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken,
-                                                                     HttpServletResponse response) {
-        return memberAuthService.memberRefreshToken(refreshToken, response);
-    }
-
-    ;
 
 }

@@ -12,7 +12,7 @@ import java.sql.Timestamp;
  */
 @Data
 @Builder
-public class RegistrationDetailResponse implements Serializable {
+public class RegistrationEventResponse implements Serializable {
 
     @JsonProperty("eventId")
     private String EventId;  // 活動ID

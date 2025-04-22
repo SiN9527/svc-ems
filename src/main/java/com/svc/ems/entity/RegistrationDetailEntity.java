@@ -45,8 +45,8 @@ public class RegistrationDetailEntity {
     private String lastName;
 
     @Size(max = 50)
-    @Column(name = "full_name_en", length = 50)
-    private String fullNameEn;
+    @Column(name = "full_name_cn", length = 50)
+    private String fullNameCn;
 
     @NotNull
     @Lob

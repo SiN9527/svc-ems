@@ -1,4 +1,8 @@
 package com.svc.ems.repo;
 
-public interface AccompanyingPersonEntityRepository extends org.springframework.data.jpa.repository.JpaRepository<com.svc.ems.entity.AccompanyingPersonEntity, com.svc.ems.entity.AdminEventPkEntity> {
+import com.svc.ems.entity.AccompanyingPersonEntity;
+import com.svc.ems.entity.AdminEventPkEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AccompanyingPersonEntityRepository extends JpaRepository<AccompanyingPersonEntity, AdminEventPkEntity> {
 }

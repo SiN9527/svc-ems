@@ -1,28 +1,38 @@
 package com.svc.ems.dto.registration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import lombok.Data;
 import lombok.Value;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.time.Instant;
 
 /**
  * DTO for {@link com.svc.ems.entity.RegistrationExtraEntity}
  */
-@Value
+@Data
 public class RegistrationExtraDto implements Serializable {
 
-    @NotNull
-    @Size(max = 100)
+    @JsonProperty("RegistrationId")
+    String registrationId;
+
+    @JsonProperty("AttendGalaDinner")
+    String attendGalaDinner;
+
+
+    @JsonProperty("AttendTour")
+    String attendTour;
+
+    @JsonProperty("AttendWelcomeReception")
+    String attendWelcomeReception;
+
+    @JsonProperty("IsVegetarian")
+    String isVegetarian;
     @JsonProperty("ItemName")
     String itemName;
-    @NotNull
     @JsonProperty("Status")
     String status;
-    @NotNull
+
     @JsonProperty("Fee")
     Integer fee;
     @JsonProperty("CreatedAt")

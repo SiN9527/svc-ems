@@ -3,84 +3,84 @@ package com.svc.ems.dto.registration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 import lombok.Value;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.time.Instant;
 
 /**
  * DTO for {@link com.svc.ems.entity.RegistrationDetailEntity}
  */
-@Value
+@Data
 public class RegistrationDetailDto implements Serializable {
+
     @NotNull
-    @Size(max = 20)
-    @JsonProperty("EventId")
+    @JsonProperty("Title")
     String title;
+
     @NotNull
-    @Size(max = 50)
-    @JsonProperty("EventId")
+    @JsonProperty("FirstName")
     String firstName;
-    @Size(max = 50)
-    @JsonProperty("EventId")
-    String middleName;
+
     @NotNull
     @Size(max = 50)
-    @JsonProperty("EventId")
+    @JsonProperty("LastName")
     String lastName;
     @Size(max = 50)
-    @JsonProperty("EventId")
-    String fullNameEn;
+    @JsonProperty("FullNameCn")
+    String fullNameCn;
     @NotNull
-    @JsonProperty("EventId")
+    @JsonProperty("Gender")
     String gender;
-    @JsonProperty("EventId")
+    @JsonProperty("DateOfBirth")
     @NotNull
-    Instant dateOfBirth;
-    @JsonProperty("EventId")
+    Timestamp dateOfBirth;
+    @JsonProperty("Nationality")
     @NotNull
     @Size(max = 50)
     String nationality;
-    @JsonProperty("EventId")
+    @JsonProperty("PassportNumber")
     @Size(max = 50)
     String passportNumber;
-    @JsonProperty("EventId")
+    @JsonProperty("Department")
     @Size(max = 100)
     String department;
-    @JsonProperty("EventId")
+    @JsonProperty("Affiliation")
     @Size(max = 100)
     String affiliation;
-    @JsonProperty("EventId")
+    @JsonProperty("CityOfAffiliation")
     @Size(max = 100)
     String cityOfAffiliation;
-    @JsonProperty("EventId")
+    @JsonProperty("CountryOfAffiliation")
     @Size(max = 100)
     String countryOfAffiliation;
-    @JsonProperty("EventId")
+    @JsonProperty("TelNumber")
     @Size(max = 50)
     String telNumber;
-    @JsonProperty("EventId")
+    @JsonProperty("MobileNumber")
     @Size(max = 50)
     String mobileNumber;
-    @JsonProperty("EventId")
+    @JsonProperty("Email")
     @NotNull
     @Size(max = 100)
     String email;
-    @JsonProperty("EventId")
+    @JsonProperty("DietaryRequest")
     String dietaryRequest;
-    @JsonProperty("EventId")
+    @JsonProperty("IsAccompanyingPerson")
     Boolean isAccompanyingPerson;
     @Size(max = 50)
-    @JsonProperty("EventId")
+    @JsonProperty("RegistrationRole")
     String registrationRole;
-    @JsonProperty("EventId")
+    @JsonProperty("UploadUrl")
     String uploadUrl;
-    @JsonProperty("EventId")
-    Instant createdAt;
-    @JsonProperty("EventId")
+    @JsonProperty("CreatedAt")
+    Timestamp createdAt;
+    @JsonProperty("ParentDetailId")
     @Size(max = 50)
     String parentDetailId;
-    @JsonProperty("EventId")
+    @JsonProperty("PersonalId")
     @Size(max = 20)
     String personalId;
 }
