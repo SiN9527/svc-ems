@@ -23,7 +23,7 @@ public class MemberMainEntity {
     @Column(name = "email", nullable = false, length = 100)
     private String email;
 
-    @Column(name = "event_id", length = 50, nullable = false)
+    @Column(name = "event_id", length = 50)
     private String eventId; // UUID 格式的活動 ID
 
     @Size(max = 255)
