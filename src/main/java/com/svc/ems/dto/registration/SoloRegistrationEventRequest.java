@@ -21,6 +21,9 @@ public class SoloRegistrationEventRequest implements Serializable {
     @JsonProperty("RegistrationExtraDto")
     private RegistrationExtraDto registrationExtraDto;
 
+    @JsonProperty("RegistrationPaymentInfoDto")
+    private RegistrationPaymentInfoDto registrationPaymentInfoDto;
+
     @JsonProperty("AccompanyingPersonDtoList")
     private List<AccompanyingPersonDto> accompanyingPersonDtoList;
 

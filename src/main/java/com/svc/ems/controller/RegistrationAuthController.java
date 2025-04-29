@@ -5,9 +5,7 @@ import com.svc.ems.dto.auth.MemberPwdUpdateRequest;
 import com.svc.ems.dto.auth.MemberResetPwdRequest;
 import com.svc.ems.dto.auth.MemberUpdateRequest;
 import com.svc.ems.dto.base.ApiResponseTemplate;
-import com.svc.ems.dto.registration.GroupRegistrationEventRequest;
-import com.svc.ems.dto.registration.RegistrationQueryResponse;
-import com.svc.ems.dto.registration.SoloRegistrationEventRequest;
+import com.svc.ems.dto.registration.*;
 import com.svc.ems.svc.auth.MemberAuthService;
 import com.svc.ems.svc.regi.RegistrationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,7 +33,7 @@ public class RegistrationAuthController {
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/soloRegi")
     @Operation(summary = "登入者單人報名")
-    public ResponseEntity<ApiResponseTemplate<String>> soloRegistration(
+    public ResponseEntity<ApiResponseTemplate<SoloRegistrationEventResponse>> soloRegistration(
             @RequestBody SoloRegistrationEventRequest req, @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response) {
         return registrationService.registerStep1(req,userDetails,response);
     }
@@ -54,7 +52,7 @@ public class RegistrationAuthController {
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/multiRegi")
     @Operation(summary = "登入者團體報名")
-    ResponseEntity<ApiResponseTemplate<String>> registerGroupStep1(  @RequestBody GroupRegistrationEventRequest req,@AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response){
+    ResponseEntity<ApiResponseTemplate<GroupRegistrationEventResponse>> registerGroupStep1(@RequestBody GroupRegistrationEventRequest req, @AuthenticationPrincipal UserDetails userDetails, HttpServletResponse response){
         return registrationService.registerGroupStep1(req,userDetails,response);
     };
 

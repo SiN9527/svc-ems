@@ -1,9 +1,7 @@
 package com.svc.ems.svc.regi;
 
 import com.svc.ems.dto.base.ApiResponseTemplate;
-import com.svc.ems.dto.registration.GroupRegistrationEventRequest;
-import com.svc.ems.dto.registration.RegistrationQueryResponse;
-import com.svc.ems.dto.registration.SoloRegistrationEventRequest;
+import com.svc.ems.dto.registration.*;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,8 +14,8 @@ public interface RegistrationService {
 
 
     @Transactional
-    ResponseEntity<ApiResponseTemplate<String>> registerStep1(SoloRegistrationEventRequest req, UserDetails userDetails, HttpServletResponse response);
+    ResponseEntity<ApiResponseTemplate<SoloRegistrationEventResponse>> registerStep1(SoloRegistrationEventRequest req, UserDetails userDetails, HttpServletResponse response);
 
     @Transactional
-    ResponseEntity<ApiResponseTemplate<String>> registerGroupStep1(GroupRegistrationEventRequest req, UserDetails userDetails, HttpServletResponse response);
+    ResponseEntity<ApiResponseTemplate<GroupRegistrationEventResponse>> registerGroupStep1(GroupRegistrationEventRequest req, UserDetails userDetails, HttpServletResponse response);
 }

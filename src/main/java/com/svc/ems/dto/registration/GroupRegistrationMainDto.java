@@ -57,6 +57,7 @@ public class GroupRegistrationMainDto implements Serializable {
     @JsonProperty("RegistrationExtraDto")
     private RegistrationExtraDto registrationExtraDto;
 
+
     @JsonProperty("AccompanyingPersonDtoList")
     private List<AccompanyingPersonDto> accompanyingPersonDtoList;
 

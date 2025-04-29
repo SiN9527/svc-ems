@@ -10,6 +10,7 @@ import com.svc.ems.svc.regi.RegistrationService;
 import com.svc.ems.utils.IdGeneratorUtils;
 import com.svc.ems.utils.MapperUtils;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,6 +31,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final RegistrationExtraRepository registrationExtraRepository;
     private final RegistrationGroupMainRepository registrationGroupMainRepository;
     private final AccompanyingPersonEntityRepository accompanyingPersonEntityRepository;
+    private final RegistrationPaymentInfoRepository registrationPaymentInfoRepository;
     private final MemberMainRepository memberMainRepository;
 
     private final IdGeneratorUtils idGeneratorUtils;
@@ -54,7 +56,7 @@ public class RegistrationServiceImpl implements RegistrationService {
      */
     @Override
     @Transactional
-    public ResponseEntity<ApiResponseTemplate<String>> registerStep1(SoloRegistrationEventRequest req, UserDetails userDetails, HttpServletResponse response) {
+    public ResponseEntity<ApiResponseTemplate <SoloRegistrationEventResponse>> registerStep1(SoloRegistrationEventRequest req, UserDetails userDetails, HttpServletResponse response) {
 
 
         Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(userDetails, memberMainRepository);
@@ -66,26 +68,38 @@ public class RegistrationServiceImpl implements RegistrationService {
         RegistrationMainDto registrationMainDto = req.getRegistrationMainDto();
         RegistrationDetailDto registrationDetailDto = req.getRegistrationDetailDto();
         RegistrationExtraDto registrationExtraDto = req.getRegistrationExtraDto();
+        RegistrationPaymentInfoDto registrationPaymentInfoDto = req.getRegistrationPaymentInfoDto();
         List<AccompanyingPersonDto> accompanyingPersonDtoList = req.getAccompanyingPersonDtoList();
 
         String registrationId = idGeneratorUtils.generateRegNo(registrationDetailDto.getCountryOfAffiliation(),registrationMainDto.getRegistrationType());
         // 1. 檢查該會員是否已有此活動報名紀錄
-        RegistrationMainEntity mainEntity = registrationMainRepository.findByEventIdAndMemberId(registrationMainDto.getEventId(), member.get().getMemberId())
-                .orElseGet(() -> createNewRegistrationMain(req, member.get(), registrationId));
-if (mainEntity.getRegistrationStatus().equals("PENDING")) {
+        Optional<RegistrationMainEntity> mainEntity = registrationMainRepository.findByEventIdAndMemberId(registrationMainDto.getEventId(), member.get().getMemberId());
+
+    if (mainEntity.isPresent()) {
             return ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.REGISTRATION_ALREADY_EXISTS));
         }
+        createNewRegistrationMain(req, member.get(), registrationId);
         // 2. 儲存報名詳細資料
        saveRegistrationDetail(registrationDetailDto,registrationId);
        saveRegistrationExtra(registrationExtraDto,registrationId);
+        saveRegistrationPaymentInfo(registrationPaymentInfoDto,registrationId,false);
        saveRegistrationAccompany(accompanyingPersonDtoList,registrationId);
 
 
+        SoloRegistrationEventResponse soloRegistrationEventResponse = querySoloRegistrationResponse(member.get().getMemberId());
 
-
-
-        return ResponseEntity.ok(ApiResponseTemplate.success("Registration Step 1 completed."
+        return ResponseEntity.ok(ApiResponseTemplate.success("Registration Step 1 completed.",soloRegistrationEventResponse
         ));
+    }
+
+    private void saveRegistrationPaymentInfo(RegistrationPaymentInfoDto registrationPaymentInfoDto, String registrationId,boolean isGroup) {
+        RegistrationPaymentInfoEntity registrationPaymentInfoEntity = MapperUtils.map(registrationPaymentInfoDto, RegistrationPaymentInfoEntity.class);
+        registrationPaymentInfoEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        registrationPaymentInfoEntity.setRegistrationId(registrationId);
+        registrationPaymentInfoEntity.setGroup(isGroup);
+
+        registrationPaymentInfoRepository.save(registrationPaymentInfoEntity);
+        registrationPaymentInfoRepository.flush();
     }
 
     private void saveRegistrationAccompany(List<AccompanyingPersonDto> accompanyingPersonDtoList, String registrationId) {
@@ -107,7 +121,7 @@ if (mainEntity.getRegistrationStatus().equals("PENDING")) {
      */
     @Transactional
     @Override
-    public ResponseEntity<ApiResponseTemplate<String>> registerGroupStep1(GroupRegistrationEventRequest req, UserDetails userDetails, HttpServletResponse response) {
+    public ResponseEntity<ApiResponseTemplate<GroupRegistrationEventResponse>> registerGroupStep1(GroupRegistrationEventRequest req, UserDetails userDetails, HttpServletResponse response) {
 
         Optional<MemberMainEntity> member = jwtUtil.validateAndGetEntity(userDetails, memberMainRepository);
         if (member.isEmpty()) {
@@ -121,8 +135,12 @@ if (mainEntity.getRegistrationStatus().equals("PENDING")) {
 
         AtomicInteger counter = new AtomicInteger(1);
 
+
         for (GroupRegistrationMainDto dto : req.getGroupRegistrationMainDto()) {
             String regId = idGeneratorUtils.generateFullRegistrationNumber(groupCode, seq);
+            if (dto.getIsGroupMain()){
+                saveRegistrationPaymentInfo(req.getRegistrationPaymentInfoDto(),regId,true);
+            }
             RegistrationDetailDto registrationDetailDto = dto.getRegistrationDetailDto();
             RegistrationExtraDto registrationExtraDto = dto.getRegistrationExtraDto();
             List<AccompanyingPersonDto> accompanyingPersonDtoList = dto.getAccompanyingPersonDtoList();
@@ -148,7 +166,52 @@ if (mainEntity.getRegistrationStatus().equals("PENDING")) {
             counter.incrementAndGet();
         }
 
-        return ResponseEntity.ok(ApiResponseTemplate.success("Group registration submitted successfully. Group Code: " + groupCode));
+        GroupRegistrationEventResponse groupRegistrationEventResponse = queryGroupRegistrationResponse(member.get().getMemberId(), groupCode);
+        return ResponseEntity.ok(ApiResponseTemplate.success(("Group registration submitted successfully. Group Code: " + groupCode),groupRegistrationEventResponse));
+    }
+
+
+    private SoloRegistrationEventResponse querySoloRegistrationResponse(String memberId) {
+        RegistrationMainEntity registrationMain = registrationMainRepository.findByMemberId(memberId);
+        if (registrationMain==null) {
+            throw new RuntimeException("No registration details found for member ID: " + memberId );
+        }
+        RegistrationMainDto registrationMainDto = MapperUtils.map(registrationMain, RegistrationMainDto.class);
+        RegistrationPaymentInfoEntity paymentInfoEntity = registrationPaymentInfoRepository.findByRegistrationIdAndIsGroup(registrationMain.getRegistrationId(),false);
+        if (paymentInfoEntity == null) {
+            throw new RuntimeException("No payment information found for registration ID: " + registrationMain.getMemberId());
+        }
+        RegistrationPaymentInfoDto paymentInfoDto = MapperUtils.map(paymentInfoEntity, RegistrationPaymentInfoDto.class);
+
+
+        SoloRegistrationEventResponse response = new SoloRegistrationEventResponse();
+        response.setRegistrationMainDto(registrationMainDto);
+        response.setRegistrationPaymentInfoDto(paymentInfoDto);
+        return response;
+
+    }
+
+
+    private GroupRegistrationEventResponse queryGroupRegistrationResponse(@Size(max = 50) String memberId, String groupCode) {
+        RegistrationMainEntity registrationMain = registrationMainRepository.findByMemberIdAndGroupCode(memberId, groupCode);
+        if (registrationMain==null) {
+            throw new RuntimeException("No registration details found for member ID: " + memberId );
+        }
+        String groupLeaderId = registrationMain.getRegistrationId();
+
+        RegistrationPaymentInfoEntity paymentInfoEntity = registrationPaymentInfoRepository.findByRegistrationIdAndIsGroup(groupLeaderId,true);
+        if (paymentInfoEntity == null) {
+            throw new RuntimeException("No payment information found for registration ID: " + groupLeaderId);
+        }
+        RegistrationPaymentInfoDto paymentInfoDto = MapperUtils.map(paymentInfoEntity, RegistrationPaymentInfoDto.class);
+
+        List<RegistrationMainEntity> registrationMainEntities = registrationMainRepository.findByGroupCode(groupCode);
+        List<RegistrationMainDto> registrationMainDtoList = MapperUtils.mapList(registrationMainEntities, RegistrationMainDto.class);
+        GroupRegistrationEventResponse response = new GroupRegistrationEventResponse();
+        response.setRegistrationMainDtoList(registrationMainDtoList);
+        response.setRegistrationPaymentInfoDto(paymentInfoDto);
+        return response;
+
     }
 
 
@@ -156,11 +219,10 @@ if (mainEntity.getRegistrationStatus().equals("PENDING")) {
 
 
 
-
         RegistrationMainEntity mainEntity = RegistrationMainEntity.builder()
                 .registrationId(regId)
                 .eventId(dto.getEventId())
-                .memberId(member.getMemberId())
+                .memberId(dto.getIsGroupMain()? member.getMemberId():"")
                 .groupCode(groupCode)
                 .registrationType(dto.getRegistrationType())
                 .isDomestic(dto.getIsDomestic())
@@ -173,6 +235,7 @@ if (mainEntity.getRegistrationStatus().equals("PENDING")) {
                 .updatedAt(new Timestamp(System.currentTimeMillis()))
                 .build();
         registrationMainRepository.save(mainEntity);
+        registrationMainRepository.flush();
 
     }
 

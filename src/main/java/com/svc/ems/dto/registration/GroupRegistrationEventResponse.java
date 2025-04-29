@@ -10,19 +10,13 @@ import java.util.List;
  * DTO for {@link com.svc.ems.entity.MemberRoleEventEntity}
  */
 @Data
-public class GroupRegistrationEventRequest implements Serializable {
+public class GroupRegistrationEventResponse implements Serializable {
 
-    @JsonProperty("GroupRegistrationMainDto")
-    private List<GroupRegistrationMainDto> groupRegistrationMainDto;
+    @JsonProperty("RegistrationMainDtoList")
+    private List<RegistrationMainDto> registrationMainDtoList;
 
     @JsonProperty("RegistrationPaymentInfoDto")
     private RegistrationPaymentInfoDto registrationPaymentInfoDto;
-
-
-
-
-
-
 
 
 }
