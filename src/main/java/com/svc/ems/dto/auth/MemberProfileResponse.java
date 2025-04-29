@@ -103,4 +103,7 @@ public class MemberProfileResponse {
     @NotBlank(message = "Mobile number cannot be empty")
     @JsonProperty("Mobile")
     private String mobile;
+
+    @JsonProperty("EventId")
+    private String eventId;
 }
