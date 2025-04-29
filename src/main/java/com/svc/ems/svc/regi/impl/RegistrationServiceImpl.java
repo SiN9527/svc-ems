@@ -172,14 +172,14 @@ public class RegistrationServiceImpl implements RegistrationService {
 
 
     private SoloRegistrationEventResponse querySoloRegistrationResponse(String memberId) {
-        RegistrationMainEntity registrationMain = registrationMainRepository.findByMemberId(memberId);
-        if (registrationMain==null) {
+        List<RegistrationMainEntity> registrationMainList = registrationMainRepository.findByMemberIdAndGroupCode(memberId, null);
+        if (registrationMainList.isEmpty()) {
             throw new RuntimeException("No registration details found for member ID: " + memberId );
         }
-        RegistrationMainDto registrationMainDto = MapperUtils.map(registrationMain, RegistrationMainDto.class);
-        RegistrationPaymentInfoEntity paymentInfoEntity = registrationPaymentInfoRepository.findByRegistrationIdAndIsGroup(registrationMain.getRegistrationId(),false);
+        RegistrationMainDto registrationMainDto = MapperUtils.map(registrationMainList.get(0), RegistrationMainDto.class);
+        RegistrationPaymentInfoEntity paymentInfoEntity = registrationPaymentInfoRepository.findByRegistrationIdAndIsGroup(registrationMainList.get(0).getRegistrationId(),false);
         if (paymentInfoEntity == null) {
-            throw new RuntimeException("No payment information found for registration ID: " + registrationMain.getMemberId());
+            throw new RuntimeException("No payment information found for registration ID: " + registrationMainList.get(0).getMemberId());
         }
         RegistrationPaymentInfoDto paymentInfoDto = MapperUtils.map(paymentInfoEntity, RegistrationPaymentInfoDto.class);
 
@@ -193,11 +193,11 @@ public class RegistrationServiceImpl implements RegistrationService {
 
 
     private GroupRegistrationEventResponse queryGroupRegistrationResponse(@Size(max = 50) String memberId, String groupCode) {
-        RegistrationMainEntity registrationMain = registrationMainRepository.findByMemberIdAndGroupCode(memberId, groupCode);
-        if (registrationMain==null) {
+        List<RegistrationMainEntity> registrationMainList = registrationMainRepository.findByMemberIdAndGroupCode(memberId, groupCode);
+        if (registrationMainList.isEmpty()) {
             throw new RuntimeException("No registration details found for member ID: " + memberId );
         }
-        String groupLeaderId = registrationMain.getRegistrationId();
+        String groupLeaderId = registrationMainList.get(0).getRegistrationId();
 
         RegistrationPaymentInfoEntity paymentInfoEntity = registrationPaymentInfoRepository.findByRegistrationIdAndIsGroup(groupLeaderId,true);
         if (paymentInfoEntity == null) {

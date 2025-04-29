@@ -18,7 +18,7 @@ public interface RegistrationMainRepository extends JpaRepository<RegistrationMa
     @Query("SELECT MAX(r.registrationId) FROM RegistrationMainEntity r WHERE r.registrationId LIKE :prefix%")
     String findMaxRegistrationIdByPrefix(@Param("prefix") String prefix);
 
-    RegistrationMainEntity findByMemberIdAndGroupCode( String memberId, String groupCode);
+   List<RegistrationMainEntity> findByMemberIdAndGroupCode( String memberId, String groupCode);
 
     List<RegistrationMainEntity> findByGroupCode( String groupCode);
 
