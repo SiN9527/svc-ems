@@ -26,7 +26,7 @@ import java.util.List;
             // Step 1: 組合前綴（不含流水碼）
             String countryCode = "Taiwan".equals(country) ? "D" : "O";
 
-            String typeCode = switch (regType.toLowerCase()) {
+            String typeCode = switch (regType) {
                 case "P_E", "P_R" -> "P";
                 case "R_E", "R_R" -> "R";
                 case "S_E","S_R" -> "S";
