@@ -65,7 +65,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ApiResponseTemplate<Void> handleGlobalException(Exception e) {
         log.error("Unexpected Exception: {}", e.getMessage(), e); // **記錄異常日誌**
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR");
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR->" + e.getMessage());
     }
 
 
