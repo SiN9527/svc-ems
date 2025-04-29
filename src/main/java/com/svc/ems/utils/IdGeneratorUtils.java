@@ -27,10 +27,10 @@ import java.util.List;
             String countryCode = "Taiwan".equals(country) ? "D" : "O";
 
             String typeCode = switch (regType.toLowerCase()) {
-                case "doctor", "professor" -> "P";
-                case "resident", "graduate", "researcher", "nurse", "educator", "individual researcher" -> "R";
-                case "student" -> "S";
-                case "member" -> "M";
+                case "P_E", "P_R" -> "P";
+                case "R_E", "R_R" -> "R";
+                case "S_E","S_R" -> "S";
+                case "M_E","M_R" -> "M";
                 default -> throw new IllegalArgumentException("無效的註冊類型：" + regType);
             };
 
