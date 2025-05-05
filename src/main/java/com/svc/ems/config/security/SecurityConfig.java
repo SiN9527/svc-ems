@@ -31,9 +31,6 @@ public class SecurityConfig {
     @Resource
     private JwtUtil jwtUtil;
 
-    // 注入自定義的未授權處理類別，當用戶未授權時將由此類處理
-    @Resource
-    private CustomAuthenticationEntryPoint customEntryPoint;
     @Resource
     private CorsConfigurationSource source;
 
@@ -66,8 +63,6 @@ public class SecurityConfig {
                         // 其他所有請求皆需要驗證
                         .anyRequest().authenticated()
                 )
-                // 設定未授權時的處理方式
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(customEntryPoint))
                 // 設定 Session 為無狀態，適合 JWT 認證
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 在 UsernamePasswordAuthenticationFilter 前加入自定義的 JWT 過濾器
