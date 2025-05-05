@@ -57,6 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/sys/member/**").permitAll()
                         .requestMatchers("/api/base/**").permitAll()
                         .requestMatchers("/api/sys/admin/**").permitAll()
+                        .requestMatchers("/api/activity/**").permitAll()
                         // 允許所有 OPTIONS 請求，避免預檢請求被阻擋 (放行Token)
                         // 瀏覽器會先發送一個 OPTIONS 預檢請求來確認 CORS 配置是否允許這樣的請求
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

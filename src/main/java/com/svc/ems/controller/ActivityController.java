@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Slf4j
+/**
+ * Activity 活動相關功能
+ */
 @RestController
 @RequestMapping("/api/activity")
 @RequiredArgsConstructor
@@ -24,7 +26,6 @@ public class ActivityController {
     @PostMapping("/eventQuery")
     @Operation(summary = "活動清單")
     public ResponseEntity<ApiResponseTemplate<List<activityQueryResponse>>> getActivityList() {
-        log.info("eventQuery===> {}", "12344");
         return activityService.activityQuery();
     }
 }
