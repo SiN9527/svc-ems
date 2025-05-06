@@ -30,7 +30,7 @@ public class GroupRegistrationMainDto implements Serializable {
 
     String registrationType;
 
-    @JsonProperty(" AnyAccompanyingPerson")
+    @JsonProperty("AnyAccompanyingPerson")
     Boolean anyAccompanyingPerson;
 
     @JsonProperty("IsDomestic")
