@@ -1,6 +1,6 @@
 package com.svc.ems.svc.activity.impl;
 
-import com.svc.ems.dto.activity.activityQueryResponse;
+import com.svc.ems.dto.activity.ActivityQueryResponse;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.entity.EventEntity;
 import com.svc.ems.enums.ErrorCode;
@@ -22,15 +22,15 @@ public class ActivityServiceImpl implements ActivityService {
     private final EventRepository eventRepository;
     
     @Override
-    public ResponseEntity<ApiResponseTemplate<List<activityQueryResponse>>> activityQuery() {
+    public ResponseEntity<ApiResponseTemplate<List<ActivityQueryResponse>>> activityQuery() {
         List<EventEntity> eventList = eventRepository.findAll();
         if (eventList.isEmpty()) {
             return  ResponseEntity.badRequest().body(ApiResponseTemplate.fail(400, ErrorCode.DATA_NOT_FOUND));
         }
 
-        List<activityQueryResponse> responsesList = new ArrayList<>();
+        List<ActivityQueryResponse> responsesList = new ArrayList<>();
         for (EventEntity event : eventList) {
-            activityQueryResponse response = new activityQueryResponse();
+            ActivityQueryResponse response = new ActivityQueryResponse();
             response.setEventId(event.getEventId());
             response.setEventName(event.getEventName());
             responsesList.add(response);

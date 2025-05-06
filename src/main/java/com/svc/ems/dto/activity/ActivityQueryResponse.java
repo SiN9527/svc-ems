@@ -3,10 +3,8 @@ package com.svc.ems.dto.activity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
-public class activityQueryResponse {
+public class ActivityQueryResponse {
 
     /** 活動ID */
     @JsonProperty("EventId")

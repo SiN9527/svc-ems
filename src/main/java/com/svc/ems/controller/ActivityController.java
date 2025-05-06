@@ -1,11 +1,10 @@
 package com.svc.ems.controller;
 
-import com.svc.ems.dto.activity.activityQueryResponse;
+import com.svc.ems.dto.activity.ActivityQueryResponse;
 import com.svc.ems.dto.base.ApiResponseTemplate;
 import com.svc.ems.svc.activity.ActivityService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +24,7 @@ public class ActivityController {
 
     @PostMapping("/eventQuery")
     @Operation(summary = "活動清單")
-    public ResponseEntity<ApiResponseTemplate<List<activityQueryResponse>>> getActivityList() {
+    public ResponseEntity<ApiResponseTemplate<List<ActivityQueryResponse>>> getActivityList() {
         return activityService.activityQuery();
     }
 }
