@@ -17,7 +17,7 @@ import java.time.Instant;
 public class RegistrationMainEntity {
     @Id
     @Size(max = 36)
-    @Column(name = "registration_id", nullable = false, length = 36)
+    @Column(name = "registration_id", nullable = false, length = 36, insertable = false, updatable = false)
     private String registrationId;
 
     @Size(max = 36)
@@ -72,4 +72,16 @@ public class RegistrationMainEntity {
     @Column(name = "is_group_main")
     private Boolean isGroupMain = false;
 
+//    =============================================
+    @OneToOne(mappedBy = "registrationMain", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "registration_id", referencedColumnName = "registration_id")
+    private RegistrationDetailEntity registrationDetail;
+
+    @OneToOne(mappedBy = "registrationMain", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "registration_id", referencedColumnName = "registration_id")
+    private RegistrationExtraEntity registrationExtra;
+
+    @OneToOne(mappedBy = "registrationMain", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "registration_id", referencedColumnName = "registration_id")
+    private RegistrationPaymentInfoEntity registrationPaymentInfo;
 }

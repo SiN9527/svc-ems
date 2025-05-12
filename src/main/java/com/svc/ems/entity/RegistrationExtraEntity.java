@@ -22,7 +22,7 @@ public class RegistrationExtraEntity {
     private Long id;
 
 
-    @Column(name = "registration_id", nullable = false)
+    @Column(name = "registration_id", nullable = false, insertable = false, updatable = false)
     private  String  registrationId;
 
 
@@ -45,4 +45,7 @@ public class RegistrationExtraEntity {
     @Column(name = "created_at")
     private Timestamp createdAt;
 
+    @OneToOne
+    @JoinColumn(name = "registration_id", referencedColumnName = "registration_id")
+    private RegistrationMainEntity registrationMain;
 }

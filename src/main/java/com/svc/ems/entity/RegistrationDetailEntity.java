@@ -22,7 +22,7 @@ public class RegistrationDetailEntity {
     private Long id;
 
 
-    @Column(name = "registration_id", nullable = false)
+    @Column(name = "registration_id", nullable = false, insertable = false, updatable = false)
     private  String  registrationId;
 
     @Size(max = 20)
@@ -118,4 +118,7 @@ public class RegistrationDetailEntity {
     @Column(name = "personal_id", length = 20)
     private String personalId;
 
+    @OneToOne
+    @JoinColumn(name = "registration_id", referencedColumnName = "registration_id")
+    private RegistrationMainEntity registrationMain;
 }

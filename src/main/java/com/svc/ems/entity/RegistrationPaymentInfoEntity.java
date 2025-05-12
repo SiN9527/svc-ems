@@ -23,7 +23,7 @@ public class RegistrationPaymentInfoEntity {
 
     @Size(max = 36)
     @NotNull
-    @Column(name = "registration_id", nullable = false, length = 36)
+    @Column(name = "registration_id", nullable = false, length = 36, insertable = false, updatable = false)
     private String registrationId;
 
     @NotNull
@@ -72,4 +72,7 @@ public class RegistrationPaymentInfoEntity {
     @Column(name = "updated_at")
     private Timestamp updatedAt;
 
+    @OneToOne
+    @JoinColumn(name = "registration_id", referencedColumnName = "registration_id")
+    private RegistrationMainEntity registrationMain;
 }
